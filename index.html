@@ -1,0 +1,1524 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brigade">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Brigade Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one phone-first column (max 600px) between a frosted header and a frosted tab bar.
+   Large titles open each screen, then a bento grid of very rounded cards.
+   Dark night-service look by default; the light look applies when the viewer picks light. */
+:root{
+  color-scheme: dark;
+  --bg:#000000;
+  --surface:#111111;
+  --surface-2:#1C1C1E;
+  --surface-3:#2C2C2E;
+  --seg-on:#3A3A3C;
+  --sheet:#1C1C1E;
+  --sheet-2:#2C2C2E;
+  --text:#F5F5F7;
+  --text-2:#86868B;
+  --text-2b:#98989D;
+  --hair:rgba(255,255,255,.08);
+  --gold:#C9A96E;
+  --gold-text:#C9A96E;
+  --gold-ink:#1A1306;
+  --gold-soft:rgba(201,169,110,.15);
+  --good:#6FD08C;
+  --good-soft:rgba(111,208,140,.13);
+  --bad:#FF8178;
+  --bad-soft:rgba(255,129,120,.14);
+  --warn:#F5BC63;
+  --warn-soft:rgba(245,188,99,.12);
+  --on-state:#000000;
+  --ring-2:#F5F5F7;
+  --ring-3:#86868B;
+  --glass:rgba(12,12,14,.72);
+  --scrim:rgba(0,0,0,.55);
+  --shadow:0 0 0 1px var(--hair);
+  --shadow-up:0 -12px 40px rgba(0,0,0,.5);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Helvetica Neue",system-ui,sans-serif;
+  --ease:cubic-bezier(.25,.1,.25,1);
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --sheet-ease:cubic-bezier(.32,.72,0,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --r:24px;
+  --r-lg:28px;
+  --r-sm:16px;
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#F5F5F7;
+  --surface:#FFFFFF;
+  --surface-2:#F0F0F3;
+  --surface-3:#E3E3E8;
+  --seg-on:#FFFFFF;
+  --sheet:#FFFFFF;
+  --sheet-2:#F2F2F5;
+  --text:#1D1D1F;
+  --text-2:#66666B;
+  --text-2b:#66666B;
+  --hair:rgba(0,0,0,.08);
+  --gold:#C9A96E;
+  --gold-text:#85652A;
+  --gold-ink:#1A1306;
+  --gold-soft:rgba(201,169,110,.2);
+  --good:#1A7232;
+  --good-soft:rgba(26,114,50,.1);
+  --bad:#B32F28;
+  --bad-soft:rgba(179,47,40,.09);
+  --warn:#965800;
+  --warn-soft:rgba(214,140,30,.13);
+  --on-state:#FFFFFF;
+  --ring-2:#3A3A3C;
+  --ring-3:#A1A1A6;
+  --glass:rgba(245,245,247,.74);
+  --scrim:rgba(0,0,0,.3);
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+  --shadow-up:0 -12px 40px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{background:var(--bg)}
+html.locked,html.locked body{overflow:hidden}
+body{color:var(--text);font-family:var(--font);font-size:17px;line-height:1.47;letter-spacing:-.011em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
+p,h1,h2,h3,h4,ol,ul,blockquote{margin:0}
+button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.num,.tab{font-variant-numeric:tabular-nums}
+.muted{color:var(--text-2)}
+.small{font-size:14px}
+.tiny{font-size:12px;color:var(--text-2)}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+.wrap{max-width:600px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+/* Press feedback and motion */
+button,.chip{transition:transform .26s var(--ease-out),background-color .25s var(--ease),color .25s var(--ease),box-shadow .25s var(--ease),border-color .25s var(--ease),opacity .25s var(--ease)}
+button:active:not([disabled]){transform:scale(.97)}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes podUp{from{transform:scaleY(.08)}to{transform:none}}
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.04)}70%{transform:scale(.99)}100%{transform:scale(1)}}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(201,169,110,0)}30%{box-shadow:0 0 0 5px rgba(201,169,110,.3),0 0 36px rgba(201,169,110,.45)}100%{box-shadow:0 0 0 0 rgba(201,169,110,0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}18%{transform:translateX(-9px)}36%{transform:translateX(8px)}54%{transform:translateX(-5px)}72%{transform:translateX(3px)}}
+@keyframes bubIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.enter > .view > *{animation:rise .42s var(--ease-out) backwards}
+.enter > .view > *:nth-child(2){animation-delay:.05s}
+.enter > .view > *:nth-child(3){animation-delay:.1s}
+.enter > .view > *:nth-child(4){animation-delay:.15s}
+.enter > .view > *:nth-child(5){animation-delay:.2s}
+.enter > .view > *:nth-child(n+6){animation-delay:.24s}
+.enter .bento > *{animation:rise .42s var(--ease-out) backwards}
+.enter .bento > *:nth-child(1){animation-delay:.08s}
+.enter .bento > *:nth-child(2){animation-delay:.13s}
+.enter .bento > *:nth-child(3){animation-delay:.18s}
+.enter .bento > *:nth-child(4){animation-delay:.22s}
+.enter .bento > *:nth-child(5){animation-delay:.26s}
+.enter .bento > *:nth-child(n+6){animation-delay:.3s}
+.enter .grid-items > *{animation:rise .4s var(--ease-out) backwards}
+.enter .grid-items > *:nth-child(2){animation-delay:.04s}
+.enter .grid-items > *:nth-child(3){animation-delay:.08s}
+.enter .grid-items > *:nth-child(4){animation-delay:.12s}
+.enter .grid-items > *:nth-child(n+5){animation-delay:.16s}
+.enter .pod-block{animation:podUp .6s var(--ease-out) .25s backwards}
+.ring-v{transition:stroke-dashoffset 1.1s var(--ease-out)}
+.ring-v.zero{stroke-opacity:0}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--hair)}
+.top-in{padding-block:10px;display:flex;flex-direction:column;gap:8px}
+.brand-row,.role-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:5px;font-size:21px;font-weight:700;letter-spacing:-.035em;line-height:1}
+.logo-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:6px}
+.venue{display:block;margin-top:5px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2)}
+.demo-tag{font-size:12.5px;color:var(--text-2)}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:999px;background:var(--surface-2);flex:none}
+.seg button{position:relative;border:0;background:transparent;color:var(--text-2);font-weight:600;font-size:13px;letter-spacing:-.005em;height:32px;padding:0 14px;border-radius:999px;cursor:pointer}
+.seg button::before{content:"";position:absolute;inset:-6px -1px}
+.seg button[aria-pressed="true"]{background:var(--seg-on);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+
+/* Page */
+main.wrap{padding-block:8px calc(124px + env(safe-area-inset-bottom,0px))}
+.view{display:flex;flex-direction:column;gap:24px}
+.hero{display:flex;flex-direction:column;gap:10px;padding-top:24px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+.eyebrow.gold{color:var(--gold-text)}
+.title{font-size:clamp(42px,12vw,64px);font-weight:800;letter-spacing:-.045em;line-height:1;text-wrap:balance}
+.title.md{font-size:clamp(34px,9vw,48px)}
+.lede{font-size:17px;line-height:1.45;color:var(--text-2);max-width:34em}
+.lede .num{color:var(--text);font-weight:600}
+.sec-h{font-size:22px;font-weight:700;letter-spacing:-.025em;margin-bottom:12px}
+.card-h{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin-bottom:6px}
+
+/* Bento and cards */
+.bento{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.span2{grid-column:1/-1}
+@media (max-width:359px){.bento{grid-template-columns:1fr}}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;min-width:0;position:relative}
+button.card{display:block;width:100%;text-align:left;border:0;cursor:pointer}
+
+/* Buttons and pills */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:999px;border:0;font-weight:600;font-size:17px;letter-spacing:-.015em;cursor:pointer;background:var(--surface-2);color:var(--text)}
+.btn.primary{background:var(--gold);color:var(--gold-ink)}
+.btn.ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--hair)}
+.btn.sm{min-height:44px;padding:0 20px;font-size:15px}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.4;cursor:default}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.link{display:inline-flex;align-items:center;min-height:44px;background:none;border:0;padding:0 4px;color:var(--gold-text);font-weight:600;font-size:15px;cursor:pointer}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--surface-2);color:var(--text);white-space:nowrap}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.gold{background:var(--gold-soft);color:var(--gold-text)}
+.pill svg{flex:none}
+.chev{color:var(--text-2);display:inline-flex}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+.tag.special{background:var(--gold-soft);color:var(--gold-text)}
+.tag.imported{background:var(--surface-2);color:var(--text-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;border-radius:999px;padding:5px 11px;background:var(--surface-2);color:var(--text);border:0}
+.chip.alg{background:var(--bad-soft);color:var(--bad)}
+.chip.toggle,.chip.check{position:relative;min-height:36px;padding:0 15px;font-size:14px;cursor:pointer}
+.chip.toggle::before,.chip.check::before{content:"";position:absolute;inset:-4px -2px}
+.chip.toggle{color:var(--text-2)}
+.chip.toggle[aria-pressed="true"]{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 45%,transparent)}
+.chip.check{background:transparent;color:var(--warn);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--warn) 60%,transparent);border:0}
+.chip.check[aria-pressed="true"]{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad)}
+
+/* Rings, counters, bars */
+.ring-wrap{position:relative;display:inline-grid;place-items:center;flex:none}
+.ring-wrap svg{display:block}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;text-align:center}
+.ring-center b{font-size:30px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ring-center small{font-size:12px;color:var(--text-2);margin-top:4px}
+.bar{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--gold);transition:width .9s var(--ease-out)}
+.bar.warn i{background:var(--bad)}
+.legend{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.legend li{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13.5px;color:var(--text-2)}
+.legend b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+.dot{width:8px;height:8px;border-radius:50%}
+.d1{background:var(--gold)}.d2{background:var(--ring-2)}.d3{background:var(--ring-3)}
+
+/* Today */
+.brief-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:24px;overflow:hidden;border-radius:var(--r-lg)}
+.brief-card::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(140deg,rgba(201,169,110,.75),rgba(201,169,110,0) 42%,rgba(201,169,110,0) 62%,rgba(201,169,110,.35));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.brief-glow{position:absolute;right:-70px;top:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(closest-side,rgba(201,169,110,.22),rgba(201,169,110,0));pointer-events:none}
+.brief-text{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
+.brief-title{font-size:clamp(26px,7vw,32px);font-weight:800;letter-spacing:-.04em;line-height:1.05;text-wrap:balance}
+.brief-sub{font-size:15px;color:var(--text-2)}
+.brief-text .btn{align-self:flex-start;margin-top:12px}
+.brief-card.done .btn{background:var(--surface-2);color:var(--text)}
+.rings-card,.xp-card{display:flex;flex-direction:column;gap:12px}
+.rings-card .ring-wrap{align-self:center;margin-block:4px}
+.stat{font-size:clamp(40px,11vw,52px);font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.stat.gold{color:var(--gold-text)}
+.xp-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.special-card{display:flex!important;flex-direction:column;gap:6px;padding:22px}
+.sp-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.price{font-size:14px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sp-name{font-size:26px;font-weight:700;letter-spacing:-.035em;line-height:1.12;margin-top:6px}
+.sp-desc{font-size:15px;color:var(--text-2)}
+.sp-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.list-rows{display:flex;flex-direction:column}
+.list-rows > *+*{border-top:1px solid var(--hair)}
+.lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;width:100%;min-height:60px;padding:14px 0;background:none;border:0;border-radius:0;text-align:left;cursor:pointer}
+.lr-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.t1{font-size:16px;font-weight:600;letter-spacing:-.015em}
+.t2{font-size:14px;color:var(--text-2)}
+.b86{font-size:13px;font-weight:800;color:var(--bad);background:var(--bad-soft);border-radius:10px;padding:6px 9px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.tl-row{display:grid;grid-template-columns:62px minmax(0,1fr);gap:14px;padding:14px 0;align-items:baseline;font-size:15.5px}
+.tl-time{font-weight:700;color:var(--gold-text);font-variant-numeric:tabular-nums}
+.tbl{display:inline-block;font-size:12px;font-weight:700;background:var(--surface-2);border-radius:8px;padding:2px 8px;margin-right:4px;font-variant-numeric:tabular-nums}
+.show{display:flex;gap:18px;align-items:center;margin-top:6px}
+.show-time{font-size:46px;font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;flex:none}
+.show-text{font-size:15.5px;line-height:1.4}
+
+/* Podium */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;margin-top:18px}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.avatar{width:46px;height:46px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:-.02em;flex:none}
+.avatar.sm{width:38px;height:38px;font-size:13px}
+.p1 .avatar{width:58px;height:58px;font-size:18px;box-shadow:0 0 0 2px var(--gold),0 0 24px rgba(201,169,110,.35)}
+.pod.me .avatar,.lb-row.me-row .avatar{box-shadow:0 0 0 2px var(--gold)}
+.pod-name{font-size:13.5px;font-weight:600;overflow-wrap:anywhere;line-height:1.25}
+.pod.me .pod-name{color:var(--gold-text)}
+.pod-xp{font-size:12.5px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.pod-block{width:100%;border-radius:16px 16px 8px 8px;background:var(--surface-2);display:flex;justify-content:center;padding-top:10px;transform-origin:bottom}
+.pod-block b{font-size:22px;font-weight:800;color:var(--text-2)}
+.p1 .pod-block{background:linear-gradient(180deg,var(--gold-soft),var(--surface-2))}
+.p1 .pod-block b{color:var(--gold-text)}
+.lb{display:flex;flex-direction:column;gap:2px;margin-top:14px}
+.lb-row{display:grid;grid-template-columns:24px 38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 10px;border-radius:16px;font-variant-numeric:tabular-nums}
+.lb-row .rk{color:var(--text-2);font-weight:700;font-size:14px}
+.lb-row .lb-name{font-weight:600;font-size:15px;min-width:0;overflow-wrap:anywhere}
+.lb-row .lb-xp{font-size:14px;color:var(--text-2)}
+.lb-row.me-row{background:var(--gold-soft)}
+.lb-row.me-row .lb-name,.lb-row.me-row .lb-xp{color:var(--gold-text)}
+
+/* Bible */
+.segctl{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.segctl::-webkit-scrollbar{display:none}
+.segctl button{flex:none;height:40px;padding:0 18px;border-radius:999px;border:0;background:var(--surface-2);color:var(--text-2);font-weight:600;font-size:15px;cursor:pointer}
+.segctl button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink)}
+.prog-card{display:flex;align-items:center;gap:16px;padding:16px 20px}
+.prog-text{display:flex;flex-direction:column;gap:2px}
+.prog-text b{font-size:16px;font-weight:600}
+.filter{display:flex;flex-direction:column;gap:10px}
+.hidden-note{font-size:13px;color:var(--text-2)}
+.grid-items{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:600px){.grid-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.item-card{display:flex!important;flex-direction:column;gap:8px;padding:20px}
+.ic-top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:24px}
+.ic-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0}
+.ic-origin{font-size:12.5px;color:var(--text-2)}
+.ic-name{font-size:21px;font-weight:700;letter-spacing:-.03em;line-height:1.18}
+.ic-desc{font-size:15px;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ic-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.read{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-2)}
+.read.on svg{color:var(--gold-text)}
+.item-card.is-pending{box-shadow:var(--shadow),inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)}
+
+/* Bottle service */
+.fmt-head,.fmt{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 40px 30px 44px;gap:8px;align-items:center}
+.fmt-head{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);padding:8px 0}
+.fmt{padding:10px 0;border-top:1px solid var(--hair);font-variant-numeric:tabular-nums;font-size:14.5px}
+.fmt-name{font-weight:600;overflow-wrap:anywhere}
+.fmt-track{display:block;height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.fmt-bar{display:block;height:100%;border-radius:5px;background:var(--gold);transition:width .9s var(--ease-out)}
+.fmt .num,.fmt-head .num{text-align:right}
+.fmt .num{color:var(--text-2)}
+.steps{counter-reset:s;list-style:none;padding:0;display:flex;flex-direction:column;gap:16px;margin-top:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;align-items:start;font-size:15.5px}
+.steps li::before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--gold-soft);color:var(--gold-text);font-weight:700;font-size:14px;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.quotes{display:flex;flex-direction:column;gap:10px}
+.quote{font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.35}
+
+/* Quiz */
+.mode{display:flex!important;flex-direction:column;gap:6px;min-height:150px;padding:20px}
+.mode.lead{min-height:0;border-radius:var(--r-lg)}
+.mode-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.mode-title{font-size:21px;font-weight:700;letter-spacing:-.03em;line-height:1.15}
+.mode.lead .mode-title{font-size:28px;letter-spacing:-.04em}
+.mode-sub{font-size:14px;color:var(--text-2)}
+.mode-foot{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.q-top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;color:var(--text-2);padding-top:16px}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;color:var(--gold-text);background:var(--gold-soft);padding:7px 13px;border-radius:999px;white-space:nowrap}
+.timer.low{color:var(--bad);background:var(--bad-soft)}
+.segbar{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.segbar i{height:4px;border-radius:2px;background:var(--surface-3);transition:background-color .3s var(--ease)}
+.segbar i.on{background:var(--gold)}
+.q{font-size:clamp(28px,7.6vw,38px);font-weight:800;letter-spacing:-.04em;line-height:1.1;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:62px;padding:14px 18px;border:0;border-radius:20px;background:var(--surface);box-shadow:var(--shadow);text-align:left;font-size:17px;font-weight:500;letter-spacing:-.015em;cursor:pointer}
+.opt[disabled]{cursor:default}
+.opt .key{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--text-2)}
+.opt.right{background:var(--good-soft);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--good) 60%,transparent)}
+.opt.right .key{background:var(--good);color:var(--on-state)}
+.opt.wrong{background:var(--bad-soft);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--bad) 60%,transparent)}
+.opt.wrong .key{background:var(--bad);color:var(--on-state)}
+.opt.dim{opacity:.55}
+.opt.pop{animation:pop .5s var(--spring),glow 1.3s var(--ease)}
+.opt.shake{animation:shake .42s var(--ease)}
+.verdict-card{font-size:16px;line-height:1.45;animation:rise .35s var(--ease-out) backwards}
+.verdict{font-weight:700}
+.verdict.ok{color:var(--good)}
+.verdict.no{color:var(--bad)}
+.result{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding-top:28px}
+.result .ring-center b{font-size:68px;font-weight:800;letter-spacing:-.05em}
+.result .ring-center small{font-size:14px}
+
+/* Practice */
+.ai-badge{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font-size:13px;font-weight:600;color:var(--text-2);background:var(--surface-2);padding:6px 12px;border-radius:999px}
+.ai-dot{width:8px;height:8px;border-radius:50%;background:var(--text-2);flex:none}
+.ai-dot.on{background:var(--good);box-shadow:0 0 0 3px var(--good-soft)}
+.ai-dot.off{background:var(--warn)}
+.scen{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:22px}
+.scen-title{font-size:21px;font-weight:700;letter-spacing:-.03em;line-height:1.15}
+.scen-sub{grid-column:1;font-size:14.5px;color:var(--text-2)}
+.scen .chev{grid-row:1/3;grid-column:2}
+.brief-box{display:flex;flex-direction:column;gap:8px}
+.brief-box .goal{font-size:15px}
+.brief-box .goal b{color:var(--gold-text)}
+.chat{display:flex;flex-direction:column;gap:6px}
+.who{font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);margin-top:6px;padding:0 8px}
+.who.r{align-self:flex-end}
+.bub{max-width:84%;padding:11px 16px;border-radius:22px;font-size:17px;line-height:1.38;white-space:pre-wrap;overflow-wrap:anywhere}
+.bub.guest{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:7px}
+.bub.waiter{align-self:flex-end;background:var(--gold);color:var(--gold-ink);border-bottom-right-radius:7px}
+.bub.last{animation:bubIn .32s var(--ease-out) backwards}
+.dots{display:inline-flex;gap:4px;padding:5px 0;vertical-align:middle}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--text-2);opacity:.6;animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}
+.dots i:nth-child(3){animation-delay:.4s}
+.composer{display:flex;gap:10px;align-items:flex-end;padding:6px 6px 6px 18px;border-radius:28px;background:var(--surface);box-shadow:var(--shadow)}
+.composer:focus-within{box-shadow:0 0 0 1.5px var(--gold)}
+.composer textarea{flex:1;min-width:0;min-height:44px;max-height:160px;padding:10px 0;border:0;background:transparent;color:var(--text);font:inherit;font-size:17px;line-height:1.4;resize:none;outline:none}
+.composer textarea::placeholder{color:var(--text-2)}
+.icon-btn{flex:none;width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--surface-2);color:var(--text);cursor:pointer}
+.icon-btn.primary{background:var(--gold);color:var(--gold-ink)}
+.err{color:var(--bad);font-size:15px;font-weight:500}
+.score-bars{display:flex;flex-direction:column;gap:16px}
+.sb-top{display:flex;justify-content:space-between;font-size:15px;margin-bottom:7px}
+.sb-top b{font-variant-numeric:tabular-nums}
+.list{padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:16px;margin-top:6px}
+.try{font-size:19px;font-weight:600;letter-spacing:-.02em;line-height:1.35;margin-top:6px}
+
+/* Manager */
+.team-rings{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:24px;border-radius:var(--r-lg)}
+.legend.big{gap:14px;flex:1;min-width:170px}
+.legend.big li{grid-template-columns:10px minmax(0,1fr);align-items:start}
+.legend.big .dot{margin-top:9px}
+.legend.big b{display:block;font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1.05}
+.legend.big small{display:block;font-size:13px;color:var(--text-2)}
+.staff{padding:8px 20px}
+.srow{display:grid;grid-template-columns:38px minmax(0,1fr) auto 48px;gap:12px;align-items:center;padding:12px 0}
+.srow+.srow{border-top:1px solid var(--hair)}
+.srow.head{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);padding:10px 0 8px}
+.s-name{font-weight:600;font-size:16px;letter-spacing:-.015em;overflow-wrap:anywhere}
+.s-name.me{color:var(--gold-text)}
+.s-role{font-size:13px;color:var(--text-2);display:flex;gap:4px 8px;flex-wrap:wrap;align-items:center}
+.flag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--bad);background:var(--bad-soft);padding:2px 8px;border-radius:999px}
+.s-ready{display:flex;align-items:center;gap:8px;font-size:13.5px;font-variant-numeric:tabular-nums;color:var(--text-2)}
+.s-quiz{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+.r{text-align:right}
+.imp-card{display:flex;flex-direction:column;gap:14px}
+.imp-card textarea{width:100%;min-height:210px;padding:16px;border:0;border-radius:18px;background:var(--surface-2);color:var(--text);font:inherit;font-size:15px;line-height:1.5;resize:vertical}
+.imp-card textarea:focus{outline:none;box-shadow:0 0 0 1.5px var(--gold)}
+.ok-line{display:flex;gap:10px;align-items:flex-start;color:var(--good);font-weight:600}
+.rule{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.45;color:var(--text)}
+.rule svg{flex:none;color:var(--gold-text);margin-top:1px}
+.rule b{font-weight:700}
+.val{display:flex;flex-direction:column;gap:16px;padding:22px}
+.val-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.val-name{font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.15;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.kv{display:flex;flex-direction:column;gap:8px}
+.kv h4,.kv .h4{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+.kv ul{padding-left:20px;display:flex;flex-direction:column;gap:3px}
+
+/* Bottom sheet */
+.sheet{position:fixed;inset:0;z-index:60}
+.sheet-scrim{position:absolute;inset:0;background:var(--scrim);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;transition:opacity .36s var(--ease)}
+.sheet-panel{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;max-height:calc(100% - env(safe-area-inset-top,0px) - 36px);display:flex;flex-direction:column;background:var(--sheet);border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--shadow-up);transform:translateY(105%);transition:transform .38s var(--sheet-ease)}
+.sheet.open .sheet-scrim{opacity:1}
+.sheet.open .sheet-panel{transform:none}
+.sheet-grab{flex:none;width:38px;height:5px;border-radius:3px;background:var(--surface-3);margin:8px auto 0}
+.sheet-close{position:absolute;top:12px;right:max(14px,env(safe-area-inset-right,0px));width:44px;height:44px;border-radius:50%;border:0;background:var(--sheet-2);color:var(--text-2b);display:grid;place-items:center;cursor:pointer;z-index:1}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:20px;padding:14px max(24px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px))}
+.sh-head{display:flex;flex-direction:column;gap:8px;padding-right:52px}
+.sh-title{font-size:clamp(30px,8vw,38px);font-weight:800;letter-spacing:-.045em;line-height:1.05;text-wrap:balance}
+.sh-price{font-size:17px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.sh-desc{font-size:17px;line-height:1.5}
+.sh-block{background:var(--sheet-2);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.sh-block h4,.sh-block .h4{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2b)}
+.sh-block ul{padding-left:20px;display:flex;flex-direction:column;gap:3px;font-size:16px}
+.sh-block p{font-size:16px;line-height:1.45}
+.sh-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sh-link{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;width:100%;text-align:left;border:0;cursor:pointer;color:var(--text)}
+.sh-link .t1{display:block;margin-top:4px;color:var(--gold-text)}
+.warn-box{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--warn-soft);color:var(--warn);font-size:15.5px;font-weight:600;line-height:1.4;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 40%,transparent)}
+.warn-box svg{flex:none;margin-top:2px}
+.say{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sh-grid > :only-child{grid-column:1/-1}
+.say-ph{font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--gold-text)}
+
+/* Navigation */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--hair);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav .wrap{display:flex}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;padding:8px 0 6px;background:none;border:0;color:var(--text-2);font-size:11px;font-weight:600;letter-spacing:.005em;cursor:pointer;position:relative}
+.nav button[aria-current="page"]{color:var(--gold-text)}
+.nav svg{width:26px;height:26px}
+.badge{position:absolute;top:5px;left:calc(50% + 8px);min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--warn);color:var(--on-state);font-size:11px;font-weight:800;line-height:18px;text-align:center}
+:root[data-theme="light"] .badge{color:#FFFFFF}
+
+.toast{position:fixed;left:0;right:0;margin-inline:auto;width:max-content;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:70;max-width:calc(100% - 40px);background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);color:var(--text);box-shadow:var(--shadow),0 12px 32px rgba(0,0,0,.25);font-weight:600;font-size:15px;padding:12px 20px;border-radius:999px;animation:rise .3s var(--ease-out) backwards}
+.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:80}
+</style>
+</head>
+<body>
+<header class="top" id="hdr"></header>
+<main class="wrap" id="view" aria-live="polite"></main>
+<nav class="nav" id="nav" aria-label="Main"></nav>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-scrim" data-act="closeSheet"></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-grab" aria-hidden="true"></div>
+    <button class="sheet-close" id="sheetClose" data-act="closeSheet"></button>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ---------- Content: a fictional venue for the demo ---------- */
+const ALG = {
+  gluten:{en:"Gluten",fr:"Gluten"}, crustaceans:{en:"Crustaceans",fr:"Crustacés"}, egg:{en:"Egg",fr:"Œuf"},
+  fish:{en:"Fish",fr:"Poisson"}, peanuts:{en:"Peanuts",fr:"Arachides"}, soy:{en:"Soy",fr:"Soja"},
+  milk:{en:"Milk",fr:"Lait"}, nuts:{en:"Tree nuts",fr:"Fruits à coque"}, celery:{en:"Celery",fr:"Céleri"},
+  mustard:{en:"Mustard",fr:"Moutarde"}, sesame:{en:"Sesame",fr:"Sésame"}, sulphites:{en:"Sulphites",fr:"Sulfites"},
+  lupin:{en:"Lupin",fr:"Lupin"}, molluscs:{en:"Molluscs",fr:"Mollusques"}
+};
+const FILTER_ALG = ["gluten","milk","egg","nuts","fish","crustaceans","sesame","soy"];
+
+const ITEMS = [
+  {id:"prawn",cat:"food",name:"Red Prawn Carpaccio",price:165,status:"pending",special:true,
+    desc:{en:"Sicilian red prawns sliced thin, citrus dressing, crushed pistachio and basil.",fr:"Gambas rouges de Sicile en fines tranches, vinaigrette aux agrumes, pistache concassée et basilic."},
+    ingr:{en:["Sicilian red prawns","Citrus dressing","Crushed pistachio","Basil"],fr:["Gambas rouges de Sicile","Vinaigrette aux agrumes","Pistache concassée","Basilic"]},
+    allergens:[],checks:[{ingr:{en:"Sicilian red prawns",fr:"Gambas rouges de Sicile"},code:"crustaceans",ok:false},{ingr:{en:"Crushed pistachio",fr:"Pistache concassée"},code:"nuts",ok:false}],
+    pairing:"ruinart",note:{en:"Tonight’s special: 20 portions only.",fr:"Plat du jour : 20 portions seulement."}},
+  {id:"burrata",cat:"food",name:"Burrata, Heirloom Tomatoes",price:95,status:"live",
+    desc:{en:"Creamy Puglian burrata over heirloom tomatoes, basil oil and aged balsamic.",fr:"Burrata crémeuse des Pouilles sur tomates anciennes, huile de basilic et balsamique vieilli."},
+    ingr:{en:["Burrata from Puglia","Heirloom tomatoes","Basil oil","Aged balsamic","Maldon salt"],fr:["Burrata des Pouilles","Tomates anciennes","Huile de basilic","Balsamique vieilli","Sel de Maldon"]},
+    allergens:["milk"],pairing:"angel",say:{w:"Burrata",ph:"boo-RAH-tah",lang:"it-IT"},
+    note:{en:"A sharing starter: suggest one for every two guests.",fr:"Entrée à partager : en proposer une pour deux personnes."}},
+  {id:"tuna",cat:"food",name:"Tuna Tartare, Yuzu & Avocado",price:125,status:"live",
+    desc:{en:"Hand-cut yellowfin tuna, yuzu ponzu, avocado, toasted sesame and crispy shallots.",fr:"Thon albacore coupé au couteau, ponzu au yuzu, avocat, sésame grillé et échalotes croustillantes."},
+    ingr:{en:["Yellowfin tuna","Yuzu ponzu (soy sauce)","Avocado","Toasted sesame","Crispy shallots (wheat flour)"],fr:["Thon albacore","Ponzu au yuzu (sauce soja)","Avocat","Sésame grillé","Échalotes croustillantes (farine de blé)"]},
+    allergens:["fish","soy","sesame","gluten"],pairing:"chablis",say:{w:"Yuzu",ph:"YOO-zoo",lang:"ja-JP"},
+    note:{en:"Raw fish: check with the guest before you recommend it (pregnancy, preferences).",fr:"Poisson cru : vérifier avec le client avant de le recommander (grossesse, préférences)."}},
+  {id:"tagliolini",cat:"food",name:"Black Truffle Tagliolini",price:210,status:"live",
+    desc:{en:"Fresh egg tagliolini with butter, 24-month Parmigiano and black truffle shaved at the table.",fr:"Tagliolini frais aux œufs, beurre, parmesan 24 mois et truffe noire râpée à table."},
+    ingr:{en:["Fresh egg tagliolini","Black truffle","Parmigiano Reggiano, 24 months","Butter"],fr:["Tagliolini frais aux œufs","Truffe noire","Parmigiano Reggiano 24 mois","Beurre"]},
+    allergens:["gluten","egg","milk"],pairing:"ruinart",say:{w:"Tagliolini",ph:"tal-yo-LEE-nee",lang:"it-IT"},
+    note:{en:"The truffle is shaved tableside: bring the truffle box and let the guest smell it.",fr:"La truffe est râpée à table : apporter la boîte et la faire sentir au client."}},
+  {id:"seabass",cat:"food",name:"Salt-Crusted Sea Bass, for two",price:480,status:"live",
+    desc:{en:"Whole sea bass baked in a salt crust, opened and filleted at the table, with lemon and olive oil.",fr:"Bar entier cuit en croûte de sel, ouvert et levé en filets à table, citron et huile d’olive."},
+    ingr:{en:["Whole sea bass","Salt crust (sea salt, egg white)","Lemon","Extra-virgin olive oil","Thyme"],fr:["Bar entier","Croûte de sel (gros sel, blanc d’œuf)","Citron","Huile d’olive vierge extra","Thym"]},
+    allergens:["fish","egg"],pairing:"chablis",
+    note:{en:"Takes 35 minutes: say it when you take the order. Opened and filleted tableside.",fr:"Cuisson 35 minutes : le dire à la prise de commande. Ouvert et levé en filets à table."}},
+  {id:"wagyu",cat:"food",name:"Wagyu Striploin MB7",price:390,status:"live",
+    desc:{en:"Australian wagyu striploin, marbling score 7, grilled over charcoal, with chimichurri and smoked salt.",fr:"Contre-filet de wagyu australien, persillage 7, grillé au charbon, chimichurri et sel fumé."},
+    ingr:{en:["Wagyu striploin, 250 g","Chimichurri (parsley, garlic, chilli, olive oil)","Smoked salt"],fr:["Contre-filet de wagyu, 250 g","Chimichurri (persil, ail, piment, huile d’olive)","Sel fumé"]},
+    allergens:[],pairing:"tignanello",say:{w:"Wagyu",ph:"WAH-gyoo",lang:"ja-JP"},
+    note:{en:"Chef recommends medium-rare. Always ask the cooking temperature.",fr:"Le chef conseille saignant. Toujours demander la cuisson."}},
+  {id:"alaska",cat:"food",name:"Baked Alaska Flambé",price:140,status:"live",
+    desc:{en:"Vanilla ice cream and sponge under Italian meringue, flambéed with dark rum at the table.",fr:"Glace vanille et génoise sous meringue italienne, flambée au rhum ambré à table."},
+    ingr:{en:["Vanilla ice cream","Sponge cake","Italian meringue","Dark rum"],fr:["Glace vanille","Génoise","Meringue italienne","Rhum ambré"]},
+    allergens:["gluten","egg","milk"],pairing:"moet",
+    note:{en:"Show moment: tell the floor manager before you flambé. Perfect for birthdays.",fr:"Moment show : prévenir le responsable de salle avant de flamber. Idéal pour les anniversaires."}},
+
+  {id:"spritz",cat:"bar",name:"Ondine Spritz",price:75,status:"live",
+    desc:{en:"Our signature spritz: Aperol, prosecco and fresh blood orange, topped with soda.",fr:"Notre spritz signature : Aperol, prosecco et orange sanguine pressée, allongé d’eau gazeuse."},
+    ingr:{en:["Aperol","Prosecco","Blood orange juice","Soda water"],fr:["Aperol","Prosecco","Jus d’orange sanguine","Eau gazeuse"]},
+    allergens:["sulphites"],say:{w:"Aperol",ph:"AH-peh-rol",lang:"it-IT"},
+    note:{en:"Our best seller at sunset: offer it as soon as guests sit down.",fr:"Notre meilleure vente au coucher du soleil : la proposer dès l’installation."}},
+  {id:"oldfashioned",cat:"bar",name:"Smoked Old Fashioned",price:95,status:"live",
+    desc:{en:"Bourbon, demerara and Angostura bitters, smoked with oak chips under a glass cloche.",fr:"Bourbon, sucre demerara et bitter Angostura, fumé aux copeaux de chêne sous cloche."},
+    ingr:{en:["Bourbon","Demerara syrup","Angostura bitters","Orange peel","Oak smoke"],fr:["Bourbon","Sirop de demerara","Bitter Angostura","Zeste d’orange","Fumée de chêne"]},
+    allergens:[],note:{en:"Smoked at the table: a show moment, pitch it to groups.",fr:"Fumé à table : un moment show, à proposer aux groupes."}},
+  {id:"margarita",cat:"bar",name:"Yuzu Margarita",price:85,status:"live",
+    desc:{en:"Tequila blanco, fresh yuzu and agave, with a Tajín rim.",fr:"Tequila blanco, yuzu frais et agave, bord givré au Tajín."},
+    ingr:{en:["Tequila blanco","Fresh yuzu","Agave syrup","Tajín rim (chilli, lime, salt)"],fr:["Tequila blanco","Yuzu frais","Sirop d’agave","Bord au Tajín (piment, citron vert, sel)"]},
+    allergens:[],say:{w:"Tajín",ph:"tah-HEEN",lang:"es-MX"}},
+  {id:"fizz",cat:"bar",name:"Garden Fizz, zero proof",price:55,status:"live",
+    desc:{en:"Seedlip Garden 108, cucumber and elderflower tonic. No alcohol.",fr:"Seedlip Garden 108, concombre et tonic à la fleur de sureau. Sans alcool."},
+    ingr:{en:["Seedlip Garden 108 (non-alcoholic)","Cucumber","Elderflower tonic"],fr:["Seedlip Garden 108 (sans alcool)","Concombre","Tonic à la fleur de sureau"]},
+    allergens:[],note:{en:"Offer it to every guest who orders water or a soft drink.",fr:"À proposer à chaque client qui commande de l’eau ou un soft."}},
+
+  {id:"moet",cat:"wine",name:"Moët & Chandon Impérial Brut",price:950,status:"live",
+    origin:{en:"Épernay, Champagne",fr:"Épernay, Champagne"},grapes:{en:"Pinot Noir, Pinot Meunier, Chardonnay",fr:"Pinot noir, pinot meunier, chardonnay"},
+    desc:{en:"Fresh, fruity Champagne: green apple, citrus and brioche.",fr:"Champagne frais et fruité : pomme verte, agrumes et brioche."},
+    allergens:["sulphites"],say:{w:"Moët et Chandon",ph:"mo-WET eh shahn-DOHN",lang:"fr-FR"},
+    fact:{en:"The final t in Moët is pronounced. Available in bottle, magnum and jéroboam.",fr:"Le t final de Moët se prononce. Disponible en bouteille, magnum et jéroboam."}},
+  {id:"dom",cat:"wine",name:"Dom Pérignon Vintage 2015",price:2900,status:"live",
+    origin:{en:"Épernay, Champagne",fr:"Épernay, Champagne"},grapes:{en:"Chardonnay, Pinot Noir",fr:"Chardonnay, pinot noir"},
+    desc:{en:"Prestige cuvée: rich, smoky and precise, with a long finish.",fr:"Cuvée de prestige : riche, fumée et précise, avec une finale longue."},
+    allergens:["sulphites"],say:{w:"Dom Pérignon",ph:"dom peh-ree-NYOHN",lang:"fr-FR"},
+    fact:{en:"Dom Pérignon is only made in great years, so it is always a vintage.",fr:"Le Dom Pérignon n’est produit que les grandes années : il est toujours millésimé."}},
+  {id:"ruinart",cat:"wine",name:"Ruinart Blanc de Blancs",price:1250,status:"live",
+    origin:{en:"Reims, Champagne",fr:"Reims, Champagne"},grapes:{en:"100% Chardonnay",fr:"100 % chardonnay"},
+    desc:{en:"Bright and elegant: citrus, white flowers and fine bubbles.",fr:"Vif et élégant : agrumes, fleurs blanches et bulles fines."},
+    allergens:["sulphites"],say:{w:"Ruinart, blanc de blancs",ph:"rwee-NAR blahn duh BLAHN",lang:"fr-FR"},
+    fact:{en:"Founded in 1729, Ruinart is the oldest established Champagne house.",fr:"Fondée en 1729, Ruinart est la plus ancienne maison de Champagne."}},
+  {id:"angel",cat:"wine",name:"Whispering Angel Rosé",price:520,status:"live",
+    origin:{en:"Château d’Esclans, Côtes de Provence",fr:"Château d’Esclans, Côtes de Provence"},grapes:{en:"Grenache, Cinsault, Rolle",fr:"Grenache, cinsault, rolle"},
+    desc:{en:"Pale, dry Provence rosé with red berries and a crisp finish.",fr:"Rosé de Provence pâle et sec, fruits rouges et finale fraîche."},
+    allergens:["sulphites"],say:{w:"Château d’Esclans",ph:"shah-TOH dess-KLAHN",lang:"fr-FR"},
+    fact:{en:"The go-to bottle for tables that stay from dinner into the night.",fr:"La bouteille idéale pour les tables qui restent du dîner jusqu’à la nuit."}},
+  {id:"chablis",cat:"wine",name:"Chablis Premier Cru",price:640,status:"live",
+    origin:{en:"Chablis, Burgundy",fr:"Chablis, Bourgogne"},grapes:{en:"100% Chardonnay",fr:"100 % chardonnay"},
+    desc:{en:"Crisp, mineral white with lemon and oyster-shell notes.",fr:"Blanc vif et minéral, notes de citron et de coquille d’huître."},
+    allergens:["sulphites"],say:{w:"Chablis premier cru",ph:"sha-BLEE pruh-MYAY KROO",lang:"fr-FR"},
+    fact:{en:"Chardonnay from northern Burgundy: the natural match for fish and raw dishes.",fr:"Du chardonnay du nord de la Bourgogne : l’accord naturel des poissons et des plats crus."}},
+  {id:"tignanello",cat:"wine",name:"Tignanello 2020",price:1450,status:"live",
+    origin:{en:"Antinori, Tuscany",fr:"Antinori, Toscane"},grapes:{en:"Sangiovese, Cabernet Sauvignon, Cabernet Franc",fr:"Sangiovese, cabernet-sauvignon, cabernet franc"},
+    desc:{en:"Structured Tuscan red: dark cherry, spice and fine tannins.",fr:"Rouge toscan structuré : cerise noire, épices et tanins fins."},
+    allergens:["sulphites"],say:{w:"Tignanello",ph:"tee-nyah-NEL-lo",lang:"it-IT"},
+    fact:{en:"A “Super Tuscan”: Sangiovese blended with Bordeaux grapes.",fr:"Un « Super Toscan » : du sangiovese assemblé à des cépages bordelais."}}
+];
+
+const BRIEF = {
+  out:[
+    {id:"margarita",note:{en:"No fresh yuzu tonight. Offer the classic Margarita.",fr:"Pas de yuzu frais ce soir. Proposer la Margarita classique."}},
+    {id:"tagliolini",note:{en:"6 portions left. Tell the guest when you take the order.",fr:"Plus que 6 portions. Prévenir le client à la prise de commande."}}
+  ],
+  events:[
+    {time:"21:30",table:12,text:{en:"Birthday, party of 6, a 30th. Cake, sparklers and song.",fr:"Anniversaire, 6 personnes, 30 ans. Gâteau, sparklers et chanson."}},
+    {time:"22:15",table:4,text:{en:"Couple’s anniversary. Ruinart pre-ordered, rose petals.",fr:"Anniversaire de couple. Ruinart précommandé, pétales de rose."}},
+    {time:"All",table:7,text:{en:"Returning guests, party of 4. Still water, no shellfish (guest request).",fr:"Habitués, 4 personnes. Eau plate, pas de crustacés (demande du client)."}}
+  ],
+  show:{time:"22:30",text:{en:"Fire show at the bar, lights dim. No food runs from 22:25 to 22:40.",fr:"Show de feu au bar, lumières tamisées. Aucun envoi de plats de 22h25 à 22h40."}}
+};
+
+const FORMATS = [
+  {n:{en:"Bottle",fr:"Bouteille"},l:0.75,b:1},{n:{en:"Magnum",fr:"Magnum"},l:1.5,b:2},{n:{en:"Jéroboam",fr:"Jéroboam"},l:3,b:4},
+  {n:{en:"Réhoboam",fr:"Réhoboam"},l:4.5,b:6},{n:{en:"Mathusalem",fr:"Mathusalem"},l:6,b:8},{n:{en:"Salmanazar",fr:"Salmanazar"},l:9,b:12},
+  {n:{en:"Balthazar",fr:"Balthazar"},l:12,b:16},{n:{en:"Nabuchodonosor",fr:"Nabuchodonosor"},l:15,b:20}
+];
+const RITUAL = [
+  {en:"Confirm the format and the occasion with the host. Tell the bar and the DJ the table number.",fr:"Confirmer le format et l’occasion avec l’hôte. Donner le numéro de table au bar et au DJ."},
+  {en:"Prepare the ice bucket, a flute for every guest and the sparklers.",fr:"Préparer le seau à glace, une flûte par invité et les sparklers."},
+  {en:"Walk the bottle in with the sparklers lit, held high and away from faces and hair. The music cue starts as you leave the bar.",fr:"Apporter la bouteille sparklers allumés, tenus haut, loin des visages et des cheveux. La musique démarre quand vous quittez le bar."},
+  {en:"Present the label to the host and say the name and the vintage.",fr:"Présenter l’étiquette à l’hôte en annonçant le nom et le millésime."},
+  {en:"Open with a soft sigh, never a pop: hold the cork and turn the bottle, not the cork.",fr:"Ouvrir en douceur, sans bruit : tenir le bouchon et tourner la bouteille, pas le bouchon."},
+  {en:"Serve the guests first and the host last. Fill a third, let the mousse settle, then top up.",fr:"Servir les invités d’abord, l’hôte en dernier. Remplir au tiers, laisser retomber la mousse, puis compléter."}
+];
+const LINES = [
+  {en:"“For six of you, a magnum is two bottles in one, and it arrives with the full celebration.”",fr:"« Pour six personnes, un magnum, c’est deux bouteilles en une, et il arrive avec toute la célébration. »"},
+  {en:"“Shall we bring it out with the cake at 21:30, so everyone toasts together?”",fr:"« On l’apporte avec le gâteau à 21h30, pour que tout le monde trinque ensemble ? »"},
+  {en:"“Ruinart Blanc de Blancs is all Chardonnay: fresh and elegant, a favourite for birthdays.”",fr:"« Le Ruinart Blanc de Blancs, c’est 100 % chardonnay : frais et élégant, un classique des anniversaires. »"}
+];
+
+const TEAM = [
+  {name:"Marco R.",role:{en:"Head waiter",fr:"Chef de rang"},food:96,bar:88,wine:92,quiz:94,streak:12,brief:true,xp:420},
+  {name:"Elena V.",role:{en:"Sommelier",fr:"Sommelière"},food:81,bar:90,wine:100,quiz:91,streak:9,brief:true,xp:395},
+  {name:"Joy P.",role:{en:"Bartender",fr:"Barmaid"},food:58,bar:100,wine:74,quiz:86,streak:7,brief:true,xp:310},
+  {name:"Aisha K.",role:{en:"Waitress",fr:"Serveuse"},food:83,bar:71,wine:65,quiz:78,streak:5,brief:true,xp:280},
+  {me:true,name:"Alex",role:{en:"Waiter",fr:"Serveur"},streak:4,xp:250},
+  {name:"Rahul S.",role:{en:"Runner",fr:"Runner"},food:71,bar:20,wine:15,quiz:69,streak:3,brief:true,xp:190},
+  {name:"Kwame A.",role:{en:"Waiter",fr:"Serveur"},food:62,bar:55,wine:41,quiz:64,streak:2,brief:false,xp:160},
+  {name:"Lina H.",role:{en:"Hostess",fr:"Hôtesse"},food:38,bar:30,wine:22,quiz:58,streak:0,brief:false,xp:90,newHire:true}
+];
+
+const SAMPLE_MENU = `AUTUMN ADDITIONS
+Octopus a la plancha, smoked paprika, potato espuma, olive crumb — 145
+Porcini risotto, aged parmesan, sage butter (contains milk) — 160
+Pistachio tiramisu, mascarpone, espresso, cocoa — 70
+
+COCKTAILS
+Fig Negroni — gin, Campari, fig-infused sweet vermouth — 90`;
+
+const SAMPLE_IMPORT = [
+  {name:"Octopus a la Plancha",category:"food",price_aed:145,
+    description_en:"Octopus seared on the plancha with smoked paprika, potato espuma and olive crumb.",description_fr:"Poulpe saisi à la plancha, paprika fumé, espuma de pomme de terre et crumble d’olive.",
+    ingredients_en:["Octopus","Smoked paprika","Potato espuma","Olive crumb"],ingredients_fr:["Poulpe","Paprika fumé","Espuma de pomme de terre","Crumble d’olive"],
+    allergens_stated:[],allergens_to_check:[{ingredient_en:"Octopus",ingredient_fr:"Poulpe",code:"molluscs"},{ingredient_en:"Potato espuma",ingredient_fr:"Espuma de pomme de terre",code:"milk"},{ingredient_en:"Olive crumb",ingredient_fr:"Crumble d’olive",code:"gluten"}],pronunciation:"PLAHN-chah"},
+  {name:"Porcini Risotto",category:"food",price_aed:160,
+    description_en:"Porcini risotto finished with aged parmesan and sage butter.",description_fr:"Risotto aux cèpes, parmesan affiné et beurre à la sauge.",
+    ingredients_en:["Porcini","Risotto rice","Aged parmesan","Sage butter"],ingredients_fr:["Cèpes","Riz à risotto","Parmesan affiné","Beurre à la sauge"],
+    allergens_stated:["milk"],allergens_to_check:[],pronunciation:"por-CHEE-nee ree-ZOT-toh"},
+  {name:"Pistachio Tiramisu",category:"food",price_aed:70,
+    description_en:"Tiramisu with pistachio, mascarpone, espresso and cocoa.",description_fr:"Tiramisu à la pistache, mascarpone, espresso et cacao.",
+    ingredients_en:["Pistachio","Mascarpone","Espresso","Cocoa"],ingredients_fr:["Pistache","Mascarpone","Espresso","Cacao"],
+    allergens_stated:[],allergens_to_check:[{ingredient_en:"Pistachio",ingredient_fr:"Pistache",code:"nuts"},{ingredient_en:"Mascarpone",ingredient_fr:"Mascarpone",code:"milk"}],pronunciation:"tee-rah-mee-SOO"},
+  {name:"Fig Negroni",category:"bar",price_aed:90,
+    description_en:"A Negroni of gin, Campari and fig-infused sweet vermouth.",description_fr:"Un Negroni au gin, Campari et vermouth rouge infusé à la figue.",
+    ingredients_en:["Gin","Campari","Fig-infused sweet vermouth"],ingredients_fr:["Gin","Campari","Vermouth rouge infusé à la figue"],
+    allergens_stated:[],allergens_to_check:[{ingredient_en:"Sweet vermouth",ingredient_fr:"Vermouth rouge",code:"sulphites"}],pronunciation:"neh-GROH-nee"}
+];
+
+const SCEN = {
+  birthday:{
+    title:{en:"Birthday table, champagne moment",fr:"Table d’anniversaire, moment champagne"},
+    brief:{en:"Table 12, party of 6, a 30th birthday. They ordered still water and are reading the cocktail list.",fr:"Table 12, 6 personnes, des 30 ans. Ils ont commandé de l’eau plate et regardent la carte des cocktails."},
+    goal:{en:"Propose a champagne moment with the cake.",fr:"Proposer un moment champagne avec le gâteau."},
+    opener:{en:"Hi! It’s my best friend’s 30th tonight. We want something special but we’re not sure what. What do you suggest?",fr:"Bonsoir ! Ce soir, ma meilleure amie fête ses 30 ans. On veut quelque chose de spécial mais on ne sait pas trop quoi. Vous nous conseillez quoi ?"},
+    persona:"Sarah, hosting her best friend’s 30th with 4 other friends. Excited, wants a memorable moment, a little price-conscious: asks what a bottle costs compared with a bigger format and how many glasses it pours.",
+    script:{en:["That sounds fun. How much is a bottle compared with a magnum?","And a magnum is enough for the six of us?","Perfect, let’s do it with the cake then!"],fr:["Ça a l’air top. Une bouteille coûte combien par rapport à un magnum ?","Et un magnum, ça suffit pour nous six ?","Parfait, on le prend avec le gâteau alors !"]},
+    tryLine:{en:"“For six of you, a magnum of Moët pours about twelve flutes. Shall we bring it out with the cake and sparklers at 21:30?”",fr:"« Pour vous six, un magnum de Moët fait environ douze flûtes. On vous l’apporte avec le gâteau et les sparklers à 21h30 ? »"}
+  },
+  allergy:{
+    title:{en:"Guest with a nut allergy",fr:"Client allergique aux fruits à coque"},
+    brief:{en:"Table 9. A guest with a severe tree-nut allergy wants to know what is safe tonight.",fr:"Table 9. Un client allergique sévère aux fruits à coque veut savoir ce qu’il peut manger ce soir."},
+    goal:{en:"Be precise and safe, and still sell a great dinner.",fr:"Être précis et sûr, tout en vendant un beau dîner."},
+    opener:{en:"Before we order: I have a serious nut allergy. What can I eat safely, and what would you recommend?",fr:"Avant de commander : j’ai une allergie sévère aux fruits à coque. Qu’est-ce que je peux manger sans risque, et que me conseillez-vous ?"},
+    persona:"Daniel, severe tree-nut allergy, polite but careful. Asks about tonight’s special and about desserts. Relaxes only if the waiter is precise and offers to confirm with the kitchen.",
+    script:{en:["What about tonight’s special, the prawn carpaccio?","Good to know. And for dessert?","Thank you, that’s reassuring. I’ll start with the tuna tartare."],fr:["Et le plat du jour, le carpaccio de gambas ?","Bon à savoir. Et pour le dessert ?","Merci, c’est rassurant. Je commence par le tartare de thon."]},
+    tryLine:{en:"“Tonight’s carpaccio has crushed pistachio, so I’d skip it. The tuna tartare and the wagyu have no nuts, and I’ll confirm with the kitchen when I send your order.”",fr:"« Le carpaccio de ce soir contient de la pistache, je vous le déconseille. Le tartare de thon et le wagyu n’ont pas de fruits à coque, et je le confirme avec la cuisine en envoyant la commande. »"}
+  },
+  couple:{
+    title:{en:"Undecided couple",fr:"Couple indécis"},
+    brief:{en:"Table 2, a couple on date night, hesitating between two mains.",fr:"Table 2, un couple en dîner romantique, qui hésite entre deux plats."},
+    goal:{en:"Sell the salt-crusted sea bass for two and a wine to match.",fr:"Vendre le bar en croûte de sel pour deux et un vin assorti."},
+    opener:{en:"We can’t decide, everything looks good. What’s the dish you would pick here?",fr:"On n’arrive pas à choisir, tout a l’air bon. Vous, vous prendriez quoi ici ?"},
+    persona:"Leila and Omar, a couple on date night, curious, enjoy a bit of theatre, not in a hurry. Ask how long the dish takes and what to drink with it.",
+    script:{en:["Sea bass for two… how long does it take?","That works, we’re not in a rush. What would you drink with it?","Lovely, let’s go for both."],fr:["Le bar pour deux… ça prend combien de temps ?","Ça nous va, on n’est pas pressés. On boit quoi avec ?","Parfait, on prend les deux."]},
+    tryLine:{en:"“The sea bass for two is baked in a salt crust and filleted at your table. It takes 35 minutes, so I’d bring a Chablis Premier Cru while you wait.”",fr:"« Le bar pour deux est cuit en croûte de sel et levé en filets à votre table. Comptez 35 minutes : je vous propose un Chablis Premier Cru en attendant. »"}
+  }
+};
+const SCRIPT_FB = {
+  en:{overall:76,scores:{knowledge:8,selling:7,hospitality:8,safety:8},went_well:["You welcomed the guest warmly and kept the tone personal.","You named a specific product instead of a vague category."],improve:["Put one sensory detail and one number (price, size or timing) in the same sentence.","End with a clear question the guest can say yes to."]},
+  fr:{overall:76,scores:{knowledge:8,selling:7,hospitality:8,safety:8},went_well:["Accueil chaleureux, ton personnel.","Vous avez cité un produit précis plutôt qu’une catégorie vague."],improve:["Mettez un détail sensoriel et un chiffre (prix, format ou délai) dans la même phrase.","Terminez par une question claire à laquelle le client peut dire oui."]}
+};
+
+/* ---------- Interface text ---------- */
+const T = {
+  en:{
+    venue:"Ondine · Dubai Marina",demo:"Demo with an example venue",staff:"Staff",manager:"Manager",
+    nav:{today:"Today",bible:"Bible",quiz:"Quiz",practice:"Practice",team:"Team",import:"Import",validate:"Validate"},
+    hello:"Good evening, Alex",serviceLine:"Dinner service · doors 19:00 · 186 covers booked",
+    briefEyebrow:"Pre-shift briefing",briefTitle:"Tonight in 2 minutes",briefSub:(d,n)=>`5 questions · ${d} of ${n} teammates done`,briefDone:(s)=>`Done · ${s} of 5 correct`,start:"Start",redo:"Redo",
+    special:"Tonight’s special",out:"Out tonight",events:"Celebrations & VIP",show:"Show timing",leaderboard:"This week’s leaderboard",you:"you",allNight:"All",
+    cat:{food:"Food",bar:"Bar",wine:"Wine & Champagne",bottles:"Bottle service"},catBible:{food:"Food",bar:"Bar",wine:"Wine"},
+    hideWith:"Hide anything containing",studied:(a,b)=>`Studied ${a} of ${b}`,read:"Studied",unread:"Not studied yet",
+    ingredients:"Ingredients",allergens:"Allergens",validated:"Validated by the manager",pendingWarn:"Allergens not validated yet. Check with the manager before you confirm anything to a guest.",none:"None declared",
+    pairs:"Pairs with",service:"Service note",listen:"Listen",origin:"From",grapes:"Grapes",fact:"Good to know",hiddenN:(n)=>`${n} hidden by your filter`,
+    fmtTitle:"Champagne formats",fmtCols:["Format","","Litres","Btl","Flutes"],fmtNote:"About 6 flutes per 75 cl bottle.",ritual:"Sparkler ceremony",lines:"Lines that sell",quizBottles:"Quiz me on bottle service",
+    quizIntro:"Short quizzes built from your venue’s own Bible.",modes:{briefing:"Tonight’s briefing",food:"Food Bible",barwine:"Bar & Wine",bottles:"Bottle service"},
+    modeSub:{briefing:"2 minutes · special, 86s, celebrations",food:"Allergens, pairings, service notes",barwine:"Grapes, pronunciation, cocktails",bottles:"Formats and the sparkler ceremony"},
+    last:(s)=>`Last score ${s} of 5`,qOf:(i,n)=>`Question ${i} of ${n}`,next:"Next",finish:"See my score",correct:"Correct.",wrong:"Not quite.",
+    resultOf:(n)=>`out of ${n}`,xpGain:(x)=>`+${x} XP this week`,allQuiz:"All quizzes",tryAgain:"Try again",timeUp:"Time’s up. Finish anyway.",leaveQuiz:"Leave",
+    prTitle:"Practise with an AI guest",prIntro:"The guest answers like a real one. When you’re done, a trainer scores your knowledge, selling, hospitality and accuracy.",
+    prLive:"AI guest is live",prOff:"Scripted demo",prChecking:"Connecting the AI guest…",prOffNote:"Live AI isn’t available in this view, so the guest’s replies are scripted and don’t depend on what you type.",
+    goal:"Your goal",guest:"Guest",youLbl:"You",typeHere:"Type what you would say to the guest…",send:"Send",endFb:"End and get my score",leave:"Leave",stop:"Stop",
+    fbLoading:"The trainer is reading your conversation…",fbTitle:"Your score",fbScores:{knowledge:"Product knowledge",selling:"Selling",hospitality:"Hospitality",safety:"Accuracy & safety"},
+    fbWell:"What worked",fbImprove:"To improve",fbTry:"Try saying",again:"Practise again",otherScen:"Other scenarios",sampleFb:"Sample score from the scripted demo",
+    guestErr:"The guest didn’t answer. Send your message again.",fbErr:"The score couldn’t be generated. Try again.",needMsg:"Say at least one thing to the guest first.",
+    teamTitle:"Team readiness",teamSub:"Example team for this demo",tiles:{ready:"Bible readiness",brief:"Briefing done tonight",quiz:"Average quiz score"},
+    attention:"Needs attention",newHire:"New hire",colStaff:"Staff",colReady:"Bible",colQuiz:"Quiz",
+    impTitle:"Import a menu",impSub:"Paste a menu, a wine list or a cocktail list. The AI turns it into Bible pages and quiz material. Nothing reaches staff until you validate it.",
+    impBtn:"Generate the Bible",impBusy:"Reading the menu. This can take up to a minute.",impDone:(n)=>`${n} items extracted and waiting for your validation.`,impReview:"Review now",
+    impErr:"The menu couldn’t be read. Try again, or paste a shorter text.",impOff:"Live AI isn’t available in this view. Restore the example menu to try the demo version.",impReset:"Restore the example menu",impDemo:"Demo mode: example result shown.",
+    rule:"<b>House rule:</b> the AI never adds an allergen on its own. It reports the allergens written on the menu and flags ingredients for you to check.",
+    valTitle:"Waiting for validation",valSub:"Confirm allergens before staff can rely on them.",stated:"Written on the menu",toCheck:"Ingredients to check. Tap to confirm an allergen.",noneStated:"No allergen written on the menu",
+    approve:"Approve and publish",published:(c)=>`Published to the ${c} Bible`,valEmpty:"Everything is validated. Staff only see checked information.",dropNote:"Suggestions you don’t confirm are dropped when you publish.",
+    tagSpecial:"Special",tagPending:"Pending",tagImported:"Imported",aed:"AED"
+  },
+  fr:{
+    venue:"Ondine · Dubai Marina",demo:"Démo avec un établissement fictif",staff:"Équipe",manager:"Manager",
+    nav:{today:"Ce soir",bible:"Bible",quiz:"Quiz",practice:"Entraînement",team:"Équipe",import:"Import",validate:"Validation"},
+    hello:"Bonsoir Alex",serviceLine:"Service du dîner · ouverture 19h00 · 186 couverts réservés",
+    briefEyebrow:"Briefing avant service",briefTitle:"La soirée en 2 minutes",briefSub:(d,n)=>`5 questions · ${d} collègues sur ${n} l’ont fait`,briefDone:(s)=>`Fait · ${s} bonnes réponses sur 5`,start:"Commencer",redo:"Refaire",
+    special:"Plat du jour",out:"Indisponible ce soir",events:"Célébrations & VIP",show:"Timing du show",leaderboard:"Classement de la semaine",you:"vous",allNight:"Soirée",
+    cat:{food:"Cuisine",bar:"Bar",wine:"Vins & Champagnes",bottles:"Service bouteille"},catBible:{food:"Cuisine",bar:"Bar",wine:"Vins"},
+    hideWith:"Masquer ce qui contient",studied:(a,b)=>`${a} sur ${b} étudiés`,read:"Étudié",unread:"Pas encore étudié",
+    ingredients:"Ingrédients",allergens:"Allergènes",validated:"Validé par le manager",pendingWarn:"Allergènes pas encore validés. Vérifiez avec le manager avant de confirmer quoi que ce soit à un client.",none:"Aucun déclaré",
+    pairs:"Accord",service:"Note de service",listen:"Écouter",origin:"Origine",grapes:"Cépages",fact:"À savoir",hiddenN:(n)=>`${n} masqué(s) par votre filtre`,
+    fmtTitle:"Formats de champagne",fmtCols:["Format","","Litres","Btl","Flûtes"],fmtNote:"Environ 6 flûtes par bouteille de 75 cl.",ritual:"Cérémonie des sparklers",lines:"Phrases qui vendent",quizBottles:"Quiz sur le service bouteille",
+    quizIntro:"Des quiz courts tirés de la Bible de votre établissement.",modes:{briefing:"Briefing du soir",food:"Bible cuisine",barwine:"Bar & Vins",bottles:"Service bouteille"},
+    modeSub:{briefing:"2 minutes · plat du jour, ruptures, célébrations",food:"Allergènes, accords, notes de service",barwine:"Cépages, prononciation, cocktails",bottles:"Formats et cérémonie des sparklers"},
+    last:(s)=>`Dernier score ${s} sur 5`,qOf:(i,n)=>`Question ${i} sur ${n}`,next:"Suivant",finish:"Voir mon score",correct:"Bonne réponse.",wrong:"Pas tout à fait.",
+    resultOf:(n)=>`sur ${n}`,xpGain:(x)=>`+${x} XP cette semaine`,allQuiz:"Tous les quiz",tryAgain:"Recommencer",timeUp:"Temps écoulé. Terminez quand même.",leaveQuiz:"Quitter",
+    prTitle:"Entraînez-vous avec un client IA",prIntro:"Le client répond comme un vrai. À la fin, un formateur note vos connaissances, votre vente, votre accueil et votre précision.",
+    prLive:"Client IA en direct",prOff:"Démo scriptée",prChecking:"Connexion du client IA…",prOffNote:"L’IA en direct n’est pas disponible ici : les réponses du client sont scriptées et ne dépendent pas de ce que vous écrivez.",
+    goal:"Votre objectif",guest:"Client",youLbl:"Vous",typeHere:"Écrivez ce que vous diriez au client…",send:"Envoyer",endFb:"Terminer et voir mon score",leave:"Quitter",stop:"Arrêter",
+    fbLoading:"Le formateur lit votre conversation…",fbTitle:"Votre score",fbScores:{knowledge:"Connaissance produit",selling:"Vente",hospitality:"Accueil",safety:"Précision & sécurité"},
+    fbWell:"Ce qui a marché",fbImprove:"À améliorer",fbTry:"Essayez de dire",again:"Recommencer",otherScen:"Autres scénarios",sampleFb:"Exemple de score (démo scriptée)",
+    guestErr:"Le client n’a pas répondu. Renvoyez votre message.",fbErr:"Le score n’a pas pu être calculé. Réessayez.",needMsg:"Dites au moins une phrase au client d’abord.",
+    teamTitle:"Niveau de l’équipe",teamSub:"Équipe fictive pour la démo",tiles:{ready:"Maîtrise de la Bible",brief:"Briefing fait ce soir",quiz:"Score moyen aux quiz"},
+    attention:"À accompagner",newHire:"Nouvelle recrue",colStaff:"Équipe",colReady:"Bible",colQuiz:"Quiz",
+    impTitle:"Importer une carte",impSub:"Collez une carte, une carte des vins ou des cocktails. L’IA la transforme en pages de Bible et en quiz. Rien n’arrive à l’équipe avant votre validation.",
+    impBtn:"Générer la Bible",impBusy:"Lecture de la carte. Cela peut prendre jusqu’à une minute.",impDone:(n)=>`${n} éléments extraits, en attente de votre validation.`,impReview:"Valider maintenant",
+    impErr:"La carte n’a pas pu être lue. Réessayez ou collez un texte plus court.",impOff:"L’IA en direct n’est pas disponible ici. Remettez la carte d’exemple pour essayer la version démo.",impReset:"Remettre la carte d’exemple",impDemo:"Mode démo : résultat d’exemple.",
+    rule:"<b>Règle maison :</b> l’IA n’ajoute jamais un allergène d’elle-même. Elle reprend les allergènes écrits sur la carte et signale les ingrédients à vérifier.",
+    valTitle:"En attente de validation",valSub:"Confirmez les allergènes avant que l’équipe puisse s’y fier.",stated:"Écrit sur la carte",toCheck:"Ingrédients à vérifier. Touchez pour confirmer un allergène.",noneStated:"Aucun allergène écrit sur la carte",
+    approve:"Valider et publier",published:(c)=>`Publié dans la Bible ${c}`,valEmpty:"Tout est validé. L’équipe ne voit que des informations vérifiées.",dropNote:"Les suggestions non confirmées sont écartées à la publication.",
+    tagSpecial:"Du jour",tagPending:"À valider",tagImported:"Importé",aed:"AED"
+  }
+};
+
+/* ---------- State ---------- */
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem("brigade."+k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem("brigade."+k, JSON.stringify(v)); }catch(e){} }
+};
+const state = {
+  lang: store.get("lang","en") === "fr" ? "fr" : "en",
+  role: store.get("role","staff") === "manager" ? "manager" : "staff",
+  tab: null, bibleCat:"food", exclude:new Set(), openItem:null,
+  quiz:null, lastScores:{}, practice:null,
+  importText: SAMPLE_MENU, imp:{status:"idle"}
+};
+state.tab = state.role === "manager" ? "team" : "today";
+const ME = { read:new Set(["burrata","tagliolini","wagyu","spritz","moet","angel"]), quizPct:[], brief:null, xp:250 };
+
+let SAMPLE;            // undefined while checking, null when unavailable
+let aiDenied = false;  // viewer declined, or AI disabled for the account
+const GATED = ["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"];
+const samplePromise = (async () => {
+  try{
+    if(!window.claude || typeof window.claude.use !== "function") return null;
+    return (await window.claude.use("sample")) || null;
+  }catch(e){ return null; }
+})();
+samplePromise.then(s => { SAMPLE = s; refreshAi(); });
+const aiLive = () => !!SAMPLE && !aiDenied;
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const t = k => { const v = T[state.lang][k]; return v === undefined ? T.en[k] : v; };
+const L = o => o == null ? "" : (typeof o === "string" ? o : (o[state.lang] ?? o.en ?? ""));
+const byId = id => ITEMS.find(i => i.id === id);
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const fmtNum = n => new Intl.NumberFormat(state.lang === "fr" ? "fr-FR" : "en-US").format(n);
+const price = n => n == null ? "" : `${t("aed")} ${fmtNum(n)}`;
+const algChips = codes => codes.length ? `<div class="chips">${codes.map(c => `<span class="chip alg">${esc(L(ALG[c]))}</span>`).join("")}</div>` : `<span class="muted small">${esc(t("none"))}</span>`;
+const pendingCount = () => ITEMS.filter(i => i.status === "pending").length;
+const canSpeak = (() => { try{ return "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function"; }catch(e){ return false; } })();
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+const avg = a => a.length ? Math.round(a.reduce((x,y)=>x+y,0)/a.length) : null;
+
+function meStats(){
+  const cats = ["food","bar","wine"].map(c => { const live = ITEMS.filter(i => i.cat === c && i.status === "live"); return pct(live.filter(i => ME.read.has(i.id)).length, live.length); });
+  return {food:cats[0], bar:cats[1], wine:cats[2], quiz:avg(ME.quizPct), brief:ME.brief !== null, xp:ME.xp};
+}
+function teamRows(){
+  return TEAM.map(p => p.me ? {...p, ...meStats()} : p).map(p => ({...p, ready: Math.round((p.food+p.bar+p.wine)/3)}));
+}
+
+let toastTimer;
+function toast(msg){ const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2800); }
+
+
+/* ---------- Extra interface text for the new visuals (existing strings unchanged) ---------- */
+Object.assign(T.en, {myProgress:"My progress", briefShort:"Briefing", xpWeek:"XP this week", rank:(r,n)=>`Rank ${r} of ${n}`, goalXp:"Weekly goal · 500 XP", minShort:"min", close:"Close"});
+Object.assign(T.fr, {myProgress:"Ma progression", briefShort:"Briefing", xpWeek:"XP cette semaine", rank:(r,n)=>`Rang ${r} sur ${n}`, goalXp:"Objectif de la semaine · 500 XP", minShort:"min", close:"Fermer"});
+
+/* ---------- Icons ---------- */
+const sv = (body, size, sw) => `<svg ${size ? `width="${size}" height="${size}" ` : ""}viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 1.7}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+const ICON = {
+  today:sv('<path d="M3 19h18"/><path d="M6.5 15.5a5.5 5.5 0 0 1 11 0"/><path d="M12 5v2.5M4.6 8.6l1.8 1.8M19.4 8.6l-1.8 1.8"/>'),
+  bible:sv('<path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v13H7.5A2.5 2.5 0 0 1 5 17.5z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H18"/><path d="M9 8.5h5"/>'),
+  quiz:sv('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9v.4"/><path d="M12 16.8v.1"/>'),
+  practice:sv('<path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 9h7M8.5 12h4"/>'),
+  team:sv('<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.2A4.5 4.5 0 0 1 20.5 19"/>'),
+  import:sv('<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>'),
+  validate:sv('<path d="M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>'),
+  shield:sv('<path d="M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>', 22, 1.8),
+  speaker:sv('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>', 18, 2),
+  check:sv('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 14, 2.4),
+  alert:sv('<path d="M12 4 21 19.5H3z"/><path d="M12 10v4M12 17v.1"/>', 16, 2),
+  chev:sv('<path d="m9 6 6 6-6 6"/>', 18, 2.2),
+  close:sv('<path d="M7 7l10 10M17 7 7 17"/>', 18, 2.2),
+  send:sv('<path d="M12 19V5M6 11l6-6 6 6"/>', 20, 2.4),
+  stop:'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor"/></svg>'
+};
+
+/* ---------- Visual helpers: counters, bars, rings ---------- */
+const count = (key, v) => `<span class="num" data-count="${Number(v) || 0}" data-key="${key}">${fmtNum(Number(v) || 0)}</span>`;
+const barAttr = (key, v) => { const w = Math.max(0, Math.min(100, Number(v) || 0)); return `data-bar="${key}" data-v="${w}" style="width:${w}%"`; };
+function arc(key, v, c, r, sw, color){
+  const C = 2 * Math.PI * r, val = Math.max(0, Math.min(100, Math.round(Number(v) || 0)));
+  return `<circle cx="${c}" cy="${c}" r="${r}" fill="none" style="stroke:${color};stroke-opacity:.2" stroke-width="${sw}"/>`
+    + `<circle class="ring-v${val <= 0 ? " zero" : ""}" data-key="${key}" data-c="${C.toFixed(2)}" data-v="${val}" cx="${c}" cy="${c}" r="${r}" fill="none" style="stroke:${color}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${(C * (1 - val / 100)).toFixed(2)}" transform="rotate(-90 ${c} ${c})"/>`;
+}
+function ring1(key, v, size, sw, color){
+  const c = size / 2, r = (size - sw) / 2;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${arc(key, v, c, r, sw, color || "var(--gold)")}</svg>`;
+}
+function rings(key, vals, size, sw, gap){
+  sw = sw || 11; gap = gap == null ? 3 : gap;
+  const c = size / 2, cols = ["var(--gold)", "var(--ring-2)", "var(--ring-3)"];
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${vals.map((v, i) => { const r = (size - sw) / 2 - i * (sw + gap); return r > sw / 2 ? arc(`${key}-${i}`, v, c, r, sw, cols[i]) : ""; }).join("")}</svg>`;
+}
+const initials = n => String(n).replace(/[^\p{L}\s]/gu, "").trim().split(/\s+/).map(w => w[0] || "").join("").slice(0, 2).toUpperCase();
+const tagsHtml = it => `${it.special ? `<span class="tag special">${esc(t("tagSpecial"))}</span>` : ""}${it.imported ? `<span class="tag imported">${esc(t("tagImported"))}</span>` : ""}`;
+
+/* ---------- Header and navigation ---------- */
+function header(){
+  return `<div class="wrap top-in">
+    <div class="brand-row">
+      <div><div class="logo">Brigade<span class="logo-dot" aria-hidden="true"></span></div><span class="venue">${esc(t("venue"))}</span></div>
+      <div class="seg" role="group" aria-label="Language">
+        <button data-act="lang" data-arg="en" aria-pressed="${state.lang==="en"}">EN</button>
+        <button data-act="lang" data-arg="fr" aria-pressed="${state.lang==="fr"}">FR</button>
+      </div>
+    </div>
+    <div class="role-row">
+      <span class="demo-tag">${esc(t("demo"))}</span>
+      <div class="seg" role="group" aria-label="View">
+        <button data-act="role" data-arg="staff" aria-pressed="${state.role==="staff"}">${esc(t("staff"))}</button>
+        <button data-act="role" data-arg="manager" aria-pressed="${state.role==="manager"}">${esc(t("manager"))}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function nav(){
+  const tabs = state.role === "staff" ? ["today","bible","quiz","practice"] : ["team","import","validate"];
+  const n = pendingCount();
+  return `<div class="wrap">${tabs.map(k => `<button data-act="tab" data-arg="${k}" ${state.tab===k?'aria-current="page"':""}>${ICON[k]}<span>${esc(t("nav")[k])}</span>${k==="validate"&&n?`<span class="badge">${n}</span>`:""}</button>`).join("")}</div>`;
+}
+
+/* ---------- Staff: Today ---------- */
+function podium(lb){
+  const top = lb.slice(0, 3), order = [top[1], top[0], top[2]].filter(Boolean), hh = [0, 104, 78, 58];
+  const name = r => `${esc(r.name)}${r.me ? ` (${esc(t("you"))})` : ""}`;
+  return `<div class="podium">${order.map(r => { const rk = lb.indexOf(r) + 1;
+      return `<div class="pod p${rk} ${r.me ? "me" : ""}"><span class="avatar">${esc(initials(r.name))}</span><span class="pod-name">${name(r)}</span><span class="pod-xp">${count("pod" + rk, r.xp)} XP</span><span class="pod-block" style="height:${hh[rk]}px"><b>${rk}</b></span></div>`; }).join("")}</div>
+    <div class="lb">${lb.slice(3).map((r, i) => `<div class="lb-row ${r.me ? "me-row" : ""}"><span class="rk">${i + 4}</span><span class="avatar sm">${esc(initials(r.name))}</span><span class="lb-name">${name(r)}</span><span class="lb-xp">${count("lb" + (i + 4), r.xp)} XP</span></div>`).join("")}</div>`;
+}
+function vToday(){
+  const rows = teamRows(), done = rows.filter(r => r.brief).length;
+  const special = ITEMS.find(i => i.special);
+  const date = new Intl.DateTimeFormat(state.lang==="fr"?"fr-FR":"en-GB",{weekday:"long",day:"numeric",month:"long"}).format(new Date());
+  const briefDone = ME.brief !== null;
+  const lb = rows.slice().sort((a,b) => b.xp - a.xp);
+  const meRank = lb.findIndex(r => r.me);
+  const ms = meStats(), ready = Math.round((ms.food + ms.bar + ms.wine) / 3), briefPct = briefDone ? ME.brief / 5 * 100 : 0;
+  const svc = t("serviceLine").split("186").map(esc).join(count("covers", 186));
+  return `<div class="view">
+    <section class="hero"><p class="eyebrow">${esc(date)}</p><h1 class="title">${esc(t("hello"))}</h1><p class="lede">${svc}</p></section>
+    <div class="bento">
+      <button class="card brief-card span2 ${briefDone?"done":""}" data-act="quiz" data-arg="briefing">
+        <span class="brief-glow" aria-hidden="true"></span>
+        <span class="brief-text">
+          <span class="eyebrow gold">${esc(t("briefEyebrow"))}</span>
+          <span class="brief-title">${esc(t("briefTitle"))}</span>
+          <span class="brief-sub">${esc(briefDone ? t("briefDone")(ME.brief) : t("briefSub")(done, rows.length))}</span>
+          <span class="btn primary sm">${esc(briefDone ? t("redo") : t("start"))}</span>
+        </span>
+        <span class="ring-wrap">${ring1("brief", briefPct, 108, 11)}<span class="ring-center">${briefDone ? `<b>${ME.brief}</b><small>/ 5</small>` : `<b>2</b><small>${esc(t("minShort"))}</small>`}</span></span>
+      </button>
+      <div class="card rings-card">
+        <span class="card-h">${esc(t("myProgress"))}</span>
+        <span class="ring-wrap">${rings("me", [ready, ms.quiz == null ? 0 : ms.quiz, briefPct], 108, 11, 3)}</span>
+        <ul class="legend">
+          <li><i class="dot d1"></i><span>${esc(t("nav").bible)}</span><b>${count("me-b", ready)}%</b></li>
+          <li><i class="dot d2"></i><span>${esc(t("nav").quiz)}</span><b>${ms.quiz != null ? count("me-q", ms.quiz) + "%" : "—"}</b></li>
+          <li><i class="dot d3"></i><span>${esc(t("briefShort"))}</span><b>${briefDone ? ME.brief + "/5" : "—"}</b></li>
+        </ul>
+      </div>
+      <div class="card xp-card">
+        <span class="card-h">${esc(t("xpWeek"))}</span>
+        <span class="stat gold">${count("xp", ME.xp)}</span>
+        <span class="muted small">${esc(t("rank")(meRank + 1, lb.length))}</span>
+        <span class="xp-foot"><span class="bar"><i ${barAttr("xpbar", ME.xp / 5)}></i></span><span class="tiny">${esc(t("goalXp"))}</span></span>
+      </div>
+      ${special ? `<button class="card span2 special-card" data-act="openItem" data-arg="${special.id}">
+        <span class="sp-top"><span class="eyebrow gold">${esc(t("special"))}</span><span class="price">${esc(price(special.price))}</span></span>
+        <span class="sp-name">${esc(special.name)}</span>
+        <span class="sp-desc">${esc(L(special.desc))}</span>
+        <span class="sp-foot">${special.status==="pending" ? `<span class="pill warn">${ICON.alert}${esc(t("tagPending"))}</span>` : `<span class="pill good">${ICON.check}${esc(t("validated"))}</span>`}<span class="chev">${ICON.chev}</span></span>
+      </button>` : ""}
+      <section class="card span2"><h2 class="card-h">${esc(t("out"))}</h2><div class="list-rows">
+        ${BRIEF.out.map(o => { const it = byId(o.id); return `<button class="lrow" data-act="openItem" data-arg="${o.id}"><span class="b86">86</span><span class="lr-main"><span class="t1">${esc(it.name)}</span><span class="t2">${esc(L(o.note))}</span></span><span class="chev">${ICON.chev}</span></button>`; }).join("")}
+      </div></section>
+      <section class="card span2"><h2 class="card-h">${esc(t("events"))}</h2><div class="list-rows">
+        ${BRIEF.events.map(e => `<div class="tl-row"><span class="tl-time">${esc(e.time==="All"?t("allNight"):e.time)}</span><span><span class="tbl">T${e.table}</span> ${esc(L(e.text))}</span></div>`).join("")}
+      </div></section>
+      <section class="card span2"><h2 class="card-h">${esc(t("show"))}</h2><div class="show"><span class="show-time">${esc(BRIEF.show.time)}</span><span class="show-text">${esc(L(BRIEF.show.text))}</span></div></section>
+      <section class="card span2"><h2 class="card-h">${esc(t("leaderboard"))}</h2>${podium(lb)}</section>
+    </div>
+  </div>`;
+}
+
+/* ---------- Staff: Bible ---------- */
+function vBible(){
+  const cats = ["food","bar","wine","bottles"];
+  const head = `<section class="hero"><h1 class="title">${esc(t("nav").bible)}</h1></section>`;
+  const sub = `<div class="segctl" role="group">${cats.map(c => `<button data-act="cat" data-arg="${c}" aria-pressed="${state.bibleCat===c}">${esc(t("cat")[c])}</button>`).join("")}</div>`;
+  if(state.bibleCat === "bottles") return `<div class="view">${head}${sub}${vBottles()}</div>`;
+  const all = ITEMS.filter(i => i.cat === state.bibleCat);
+  const live = all.filter(i => i.status === "live");
+  const readN = live.filter(i => ME.read.has(i.id)).length;
+  const p = pct(readN, live.length);
+  const ex = state.exclude;
+  const visible = all.filter(i => i.status === "pending" || !i.allergens.some(a => ex.has(a)));
+  const hidden = all.length - visible.length;
+  return `<div class="view">${head}${sub}
+    <div class="card prog-card"><span class="ring-wrap">${ring1("bible-" + state.bibleCat, p, 56, 6)}</span><span class="prog-text"><b>${esc(t("studied")(readN, live.length))}</b><span class="muted small">${count("bp-" + state.bibleCat, p)}%</span></span></div>
+    <div class="filter"><span class="eyebrow">${esc(t("hideWith"))}</span><div class="chips">
+      ${FILTER_ALG.map(c => `<button class="chip toggle" data-act="excl" data-arg="${c}" aria-pressed="${ex.has(c)}">${esc(L(ALG[c]))}</button>`).join("")}
+    </div>${hidden ? `<span class="hidden-note">${esc(t("hiddenN")(hidden))}</span>` : ""}</div>
+    <div class="grid-items">${visible.map(itemCard).join("")}</div>
+  </div>`;
+}
+function itemCard(it){
+  const read = ME.read.has(it.id), pending = it.status === "pending";
+  const tags = tagsHtml(it);
+  const alg = pending ? `<span class="pill warn">${ICON.alert}${esc(t("tagPending"))}</span>`
+    : (it.allergens.length ? `<span class="chips">${it.allergens.map(c => `<span class="chip alg">${esc(L(ALG[c]))}</span>`).join("")}</span>` : `<span class="muted small">${esc(t("allergens"))} · ${esc(t("none"))}</span>`);
+  return `<button class="card item-card ${pending ? "is-pending" : ""}" id="item-${it.id}" data-act="toggleItem" data-arg="${it.id}" aria-haspopup="dialog">
+    <span class="ic-top"><span class="ic-tags">${tags || (it.origin ? `<span class="ic-origin">${esc(L(it.origin))}</span>` : "")}</span><span class="price">${esc(price(it.price))}</span></span>
+    <span class="ic-name">${esc(it.name)}</span>
+    <span class="ic-desc">${esc(L(it.desc))}</span>
+    <span class="ic-foot">${alg}${pending ? "" : `<span class="read ${read ? "on" : ""}">${read ? ICON.check : ""}${esc(read ? t("read") : t("unread"))}</span>`}</span>
+  </button>`;
+}
+function sheetBody(it){
+  const pending = it.status === "pending", pair = it.pairing ? byId(it.pairing) : null, tags = tagsHtml(it);
+  return `<div class="sh-head">${tags ? `<span class="ic-tags">${tags}</span>` : ""}<h2 class="sh-title" id="sheetTitle">${esc(it.name)}</h2>${it.price != null ? `<span class="sh-price">${esc(price(it.price))}</span>` : ""}</div>
+    <p class="sh-desc">${esc(L(it.desc))}</p>
+    <section class="sh-block"><h4>${esc(t("allergens"))}</h4>${pending ? `<div class="warn-box">${ICON.alert}<span>${esc(t("pendingWarn"))}</span></div>` : `${algChips(it.allergens)}<span class="pill good" style="align-self:flex-start">${ICON.check}${esc(t("validated"))}</span>`}</section>
+    ${it.origin || it.grapes ? `<div class="sh-grid">${it.origin ? `<section class="sh-block"><h4>${esc(t("origin"))}</h4><p>${esc(L(it.origin))}</p></section>` : ""}${it.grapes ? `<section class="sh-block"><h4>${esc(t("grapes"))}</h4><p>${esc(L(it.grapes))}</p></section>` : ""}</div>` : ""}
+    ${it.ingr ? `<section class="sh-block"><h4>${esc(t("ingredients"))}</h4><ul>${L(it.ingr).map(x => `<li>${esc(x)}</li>`).join("")}</ul></section>` : ""}
+    ${pair ? `<button class="sh-block sh-link" data-act="goItem" data-arg="${pair.id}"><span><span class="h4">${esc(t("pairs"))}</span><span class="t1">${esc(pair.name)}</span></span><span class="chev">${ICON.chev}</span></button>` : ""}
+    ${it.note ? `<section class="sh-block"><h4>${esc(t("service"))}</h4><p>${esc(L(it.note))}</p></section>` : ""}
+    ${it.fact ? `<section class="sh-block"><h4>${esc(t("fact"))}</h4><p>${esc(L(it.fact))}</p></section>` : ""}
+    ${it.say ? `<section class="sh-block say"><span class="say-ph">${esc(it.say.ph)}</span>${canSpeak && it.say.w ? `<button class="btn sm" data-act="speak" data-arg="${it.id}">${ICON.speaker}${esc(t("listen"))}</button>` : ""}</section>` : ""}`;
+}
+function vBottles(){
+  const max = FORMATS[FORMATS.length - 1].l, c = t("fmtCols");
+  return `<section class="card"><h2 class="card-h">${esc(t("fmtTitle"))}</h2>
+      <div class="fmt-head"><span>${esc(c[0])}</span><span></span><span class="num">${esc(c[2])}</span><span class="num">${esc(c[3])}</span><span class="num">${esc(c[4])}</span></div>
+      ${FORMATS.map((f, i) => `<div class="fmt"><span class="fmt-name">${esc(L(f.n))}</span><span class="fmt-track"><span class="fmt-bar" ${barAttr("fmt" + i, Math.max(4, f.l / max * 100))}></span></span><span class="num">${esc(fmtNum(f.l))}</span><span class="num">${f.b}</span><span class="num">≈${f.b * 6}</span></div>`).join("")}
+      <p class="tiny" style="margin-top:10px">${esc(t("fmtNote"))}</p>
+    </section>
+    <section class="card"><h2 class="card-h">${esc(t("ritual"))}</h2><ol class="steps">${RITUAL.map(s => `<li><span>${esc(L(s))}</span></li>`).join("")}</ol></section>
+    <section><h2 class="sec-h">${esc(t("lines"))}</h2><div class="quotes">${LINES.map(l => `<blockquote class="card quote">${esc(L(l))}</blockquote>`).join("")}</div></section>
+    <button class="btn primary block" data-act="quiz" data-arg="bottles">${esc(t("quizBottles"))}</button>`;
+}
+
+/* ---------- Quiz ---------- */
+const O = (en, fr) => ({en, fr: fr ?? en});
+function mkQ(q, correct, wrongs, why){ const opts = shuffle([correct, ...wrongs]); return {q, opts, correct: opts.indexOf(correct), why}; }
+function quizBriefing(){
+  return [
+    mkQ(O("What time does the fire show start?","À quelle heure commence le show de feu ?"), O("22:30","22h30"), [O("21:30","21h30"),O("22:00","22h00"),O("23:00","23h00")], O("Lights dim at 22:30 and food runs stop from 22:25 to 22:40.","Lumières tamisées à 22h30, aucun envoi de plats de 22h25 à 22h40.")),
+    mkQ(O("Which table celebrates a 30th birthday?","Quelle table fête des 30 ans ?"), O("Table 12"), [O("Table 4"),O("Table 7"),O("Table 2")], O("Table 12, party of 6, cake and sparklers at 21:30.","Table 12, 6 personnes, gâteau et sparklers à 21h30.")),
+    mkQ(O("A guest orders a Yuzu Margarita. What do you say?","Un client commande une Yuzu Margarita. Que dites-vous ?"), O("There’s no fresh yuzu tonight, may I offer a classic Margarita?","Pas de yuzu frais ce soir, puis-je vous proposer une Margarita classique ?"), [O("Send it to the bar as usual.","L’envoyer au bar comme d’habitude."),O("Offer the Ondine Spritz instead, without explaining.","Proposer un Ondine Spritz sans expliquer."),O("Say the bar is closed.","Dire que le bar est fermé.")], O("The Yuzu Margarita is 86 tonight: offer the classic version.","La Yuzu Margarita est en rupture ce soir : proposer la version classique.")),
+    mkQ(O("Table 7 asked for no shellfish. Can you recommend tonight’s Red Prawn Carpaccio?","La table 7 ne veut pas de crustacés. Pouvez-vous recommander le carpaccio de gambas ?"), O("No: red prawns are crustaceans","Non : les gambas sont des crustacés"), [O("Yes, it’s raw so it’s fine","Oui, c’est cru donc ça va"),O("Yes, if you remove the pistachio","Oui, sans la pistache"),O("Only half a portion","Seulement une demi-portion")], O("Prawns are crustaceans. Suggest the burrata or the wagyu instead.","Les gambas sont des crustacés. Proposez plutôt la burrata ou le wagyu.")),
+    mkQ(O("How many portions of truffle tagliolini are left?","Combien de portions de tagliolini à la truffe reste-t-il ?"), O("6"), [O("2"),O("12"),O("20")], O("Only 6 portions: tell the guest when you take the order.","Seulement 6 portions : prévenir le client à la prise de commande."))
+  ];
+}
+function quizFood(){
+  const live = ITEMS.filter(i => i.cat === "food" && i.status === "live");
+  const wines = ITEMS.filter(i => i.cat === "wine");
+  const qs = [];
+  shuffle(live.filter(i => i.allergens.length)).slice(0,3).forEach(it => {
+    const code = pick(it.allergens);
+    const others = shuffle(Object.keys(ALG).filter(c => !it.allergens.includes(c))).slice(0,3);
+    const list = l => it.allergens.map(c => ALG[c][l]).join(", ");
+    qs.push(mkQ({en:`Which allergen is in the ${it.name}?`,fr:`Quel allergène contient « ${it.name} » ?`}, ALG[code], others.map(c => ALG[c]), {en:`${it.name}: ${list("en")}.`,fr:`${it.name} : ${list("fr")}.`}));
+  });
+  shuffle(live.filter(i => i.pairing)).slice(0,2).forEach(it => {
+    const w = byId(it.pairing);
+    qs.push(mkQ({en:`Which wine do we pair with the ${it.name}?`,fr:`Quel vin associe-t-on à « ${it.name} » ?`}, O(w.name), shuffle(wines.filter(x => x.id !== w.id)).slice(0,3).map(x => O(x.name)), {en:`${w.name}. ${w.desc.en}`,fr:`${w.name}. ${w.desc.fr}`}));
+  });
+  const free = live.filter(i => !i.allergens.length);
+  if(free.length){
+    const f = pick(free);
+    qs.push(mkQ(O("Which dish has no declared allergens?","Quel plat n’a aucun allergène déclaré ?"), O(f.name), shuffle(live.filter(i => i.allergens.length)).slice(0,3).map(i => O(i.name)), O(`${f.name}: no allergens declared on the validated sheet.`,`${f.name} : aucun allergène déclaré sur la fiche validée.`)));
+  }
+  if(byId("seabass").status === "live") qs.push(mkQ(O("Which dish contains egg in its crust?","Quel plat contient de l’œuf dans sa croûte ?"), O("Salt-Crusted Sea Bass"), [O("Wagyu Striploin MB7"),O("Burrata, Heirloom Tomatoes"),O("Tuna Tartare, Yuzu & Avocado")], O("The salt crust is bound with egg white.","La croûte de sel est liée au blanc d’œuf.")));
+  qs.push(mkQ(O("How long does the sea bass for two take?","Combien de temps faut-il pour le bar pour deux ?"), O("35 minutes"), [O("15 minutes"),O("20 minutes"),O("50 minutes")], O("Say it when you take the order.","Le dire à la prise de commande.")));
+  return shuffle(qs).slice(0,5);
+}
+function quizBarWine(){
+  return shuffle([
+    mkQ(O("Ruinart Blanc de Blancs is made from…","Le Ruinart Blanc de Blancs est élaboré avec…"), O("100% Chardonnay","100 % chardonnay"), [O("100% Pinot Noir","100 % pinot noir"),O("Pinot Noir and Pinot Meunier","Pinot noir et pinot meunier"),O("Grenache and Cinsault","Grenache et cinsault")], O("Blanc de Blancs means only white grapes, here Chardonnay.","Blanc de Blancs : uniquement des raisins blancs, ici du chardonnay.")),
+    mkQ(O("How do you say Moët?","Comment prononce-t-on Moët ?"), O("mo-WET, the t is pronounced","mo-ette, le t se prononce"), [O("mo-AY, silent t","mo-é, t muet"),O("MOHT"),O("mweh")], O("The family name is of Dutch origin, so the final t is pronounced.","Le nom est d’origine néerlandaise : le t final se prononce.")),
+    mkQ(O("Why is Dom Pérignon always a vintage?","Pourquoi le Dom Pérignon est-il toujours millésimé ?"), O("It is only made in great years","Il n’est produit que les grandes années"), [O("It ages ten years minimum","Il vieillit dix ans minimum"),O("It comes from one single vineyard","Il vient d’une seule parcelle"),O("It’s a legal rule for prestige cuvées","C’est une règle légale des cuvées de prestige")], O(byId("dom").fact.en, byId("dom").fact.fr)),
+    mkQ(O("Which cocktail is smoked at the table?","Quel cocktail est fumé à table ?"), O("Smoked Old Fashioned"), [O("Ondine Spritz"),O("Yuzu Margarita"),O("Garden Fizz")], O("Oak smoke under a glass cloche: pitch it to groups.","Fumée de chêne sous cloche : à proposer aux groupes.")),
+    mkQ(O("A guest doesn’t drink alcohol. What do you offer?","Un client ne boit pas d’alcool. Que proposez-vous ?"), O("Garden Fizz"), [O("Ondine Spritz"),O("Smoked Old Fashioned"),O("Yuzu Margarita")], O("It’s made with Seedlip, a non-alcoholic spirit.","Il est fait avec Seedlip, un spiritueux sans alcool.")),
+    mkQ(O("Which wine goes with the salt-crusted sea bass?","Quel vin accompagne le bar en croûte de sel ?"), O("Chablis Premier Cru"), [O("Tignanello 2020"),O("Dom Pérignon Vintage 2015"),O("Whispering Angel Rosé")], O("Crisp, mineral Chardonnay with white fish.","Un chardonnay vif et minéral avec un poisson blanc.")),
+    mkQ(O("Tignanello comes from…","Le Tignanello vient de…"), O("Tuscany","Toscane"), [O("Burgundy","Bourgogne"),O("Provence"),O("Champagne")], O(byId("tignanello").fact.en, byId("tignanello").fact.fr))
+  ]).slice(0,5);
+}
+function quizBottles(){
+  return shuffle([
+    mkQ(O("How many standard bottles fit in a Jéroboam of Champagne?","Combien de bouteilles dans un jéroboam de champagne ?"), O("4"), [O("2"),O("3"),O("6")], O("3 litres, so 4 bottles of 75 cl.","3 litres, soit 4 bouteilles de 75 cl.")),
+    mkQ(O("A magnum holds…","Un magnum contient…"), O("1.5 L, 2 bottles","1,5 L, 2 bouteilles"), [O("1 L"),O("3 L"),O("2 L")], O("1.5 litres, the most popular format for tables of four to six.","1,5 litre, le format le plus demandé pour les tables de quatre à six.")),
+    mkQ(O("About how many flutes does a magnum pour?","Combien de flûtes environ dans un magnum ?"), O("12"), [O("6"),O("8"),O("20")], O("About 6 flutes per bottle, so 12 per magnum.","Environ 6 flûtes par bouteille, donc 12 par magnum.")),
+    mkQ(O("How should a Champagne bottle open?","Comment ouvrir une bouteille de champagne ?"), O("With a soft sigh: hold the cork, turn the bottle","En douceur : tenir le bouchon, tourner la bouteille"), [O("With a loud pop for the show","Avec un gros « pop » pour le show"),O("Turn the cork, hold the bottle","Tourner le bouchon, tenir la bouteille"),O("Sabre it at every table","Sabrer à chaque table")], O(RITUAL[4].en, RITUAL[4].fr)),
+    mkQ(O("During the ceremony, who is served last?","Pendant la cérémonie, qui est servi en dernier ?"), O("The host","L’hôte"), [O("The person celebrating","La personne fêtée"),O("The oldest guest","L’invité le plus âgé"),O("Whoever is closest","La personne la plus proche")], O("Guests first, host last.","Les invités d’abord, l’hôte en dernier.")),
+    mkQ(O("Which format holds 15 litres?","Quel format contient 15 litres ?"), O("Nabuchodonosor"), [O("Balthazar"),O("Salmanazar"),O("Mathusalem")], O("15 litres, so 20 bottles.","15 litres, soit 20 bouteilles."))
+  ]).slice(0,5);
+}
+let timerId = null;
+function startQuiz(mode){
+  const qs = {briefing:quizBriefing, food:quizFood, barwine:quizBarWine, bottles:quizBottles}[mode]();
+  state.quiz = {mode, qs, i:0, picked:null, score:0, done:false, ends: mode==="briefing" ? Date.now()+120000 : null};
+  state.tab = "quiz";
+  clearInterval(timerId);
+  if(state.quiz.ends) timerId = setInterval(tickTimer, 1000);
+}
+function tickTimer(){
+  const el = $("#timer"); const q = state.quiz;
+  if(!q || !q.ends || q.done){ clearInterval(timerId); return; }
+  if(!el) return;
+  const left = Math.max(0, Math.round((q.ends - Date.now())/1000));
+  el.textContent = left ? `${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}` : t("timeUp");
+  el.classList.toggle("low", left <= 20);
+}
+
+function vQuiz(){
+  const q = state.quiz;
+  if(!q){
+    const modes = ["briefing","food","barwine","bottles"];
+    return `<div class="view"><section class="hero"><h1 class="title">${esc(t("nav").quiz)}</h1><p class="lede">${esc(t("quizIntro"))}</p></section>
+      <div class="bento">${modes.map(m => { const s = state.lastScores[m], lead = m === "briefing";
+        return `<button class="card mode ${lead || m === "bottles" ? "span2" : ""} ${lead ? "lead" : ""}" data-act="quiz" data-arg="${m}">
+          <span class="mode-top"><span class="mode-title">${esc(t("modes")[m])}</span>${lead ? `<span class="timer">2:00</span>` : ""}</span>
+          <span class="mode-sub">${esc(t("modeSub")[m])}</span>
+          <span class="mode-foot">${s != null ? `<span class="pill gold">${esc(t("last")(s))}</span>` : "<span></span>"}<span class="chev">${ICON.chev}</span></span>
+        </button>`; }).join("")}</div></div>`;
+  }
+  if(q.done){
+    const n = q.qs.length;
+    return `<div class="view"><section class="result"><p class="eyebrow">${esc(t("modes")[q.mode])}</p>
+        <span class="ring-wrap">${ring1("result", pct(q.score, n), 208, 16)}<span class="ring-center"><b>${count("result", q.score)}</b><small>${esc(t("resultOf")(n))}</small></span></span>
+        <span class="pill gold">${esc(t("xpGain")(q.score * 10))}</span></section>
+      <div class="stack"><button class="btn primary block" data-act="quiz" data-arg="${q.mode}">${esc(t("tryAgain"))}</button><button class="btn block" data-act="quizHome">${esc(t("allQuiz"))}</button></div></div>`;
+  }
+  const cur = q.qs[q.i], answered = q.picked !== null, ok = answered && q.picked === cur.correct;
+  return `<div class="view">
+    <div class="q-top"><span>${esc(t("modes")[q.mode])} · ${esc(t("qOf")(q.i + 1, q.qs.length))}</span>${q.ends ? `<span class="timer" id="timer">2:00</span>` : ""}</div>
+    <div class="segbar" aria-hidden="true">${q.qs.map((_, k) => `<i class="${k < q.i || (k === q.i && answered) ? "on" : ""}"></i>`).join("")}</div>
+    <h1 class="q">${esc(L(cur.q))}</h1>
+    <div class="opts">${cur.opts.map((o, k) => { let cls = "";
+        if(answered){ if(k === cur.correct) cls = "right" + (ok ? " pop" : ""); else if(k === q.picked) cls = "wrong shake"; else cls = "dim"; }
+        return `<button class="opt ${cls}" data-act="answer" data-arg="${k}" ${answered ? "disabled" : ""}><span class="key">${"ABCDEF"[k] || k + 1}</span><span>${esc(L(o))}</span></button>`; }).join("")}</div>
+    ${answered ? `<div class="card verdict-card"><span class="verdict ${ok ? "ok" : "no"}">${esc(ok ? t("correct") : t("wrong"))}</span> ${esc(L(cur.why))}</div>
+      <button class="btn primary block" data-act="nextQ">${esc(q.i + 1 < q.qs.length ? t("next") : t("finish"))}</button>`
+      : `<div><button class="link" data-act="quizHome">${esc(t("leaveQuiz"))}</button></div>`}
+  </div>`;
+}
+
+/* ---------- Practice with an AI guest ---------- */
+function aiBadge(){
+  if(SAMPLE === undefined) return `<span class="ai-dot"></span>${esc(t("prChecking"))}`;
+  return aiLive() ? `<span class="ai-dot on"></span>${esc(t("prLive"))}` : `<span class="ai-dot off"></span>${esc(t("prOff"))}`;
+}
+function refreshAi(){ document.querySelectorAll("[data-ai]").forEach(el => { el.innerHTML = aiBadge(); }); const n = $("#aiNote"); if(n) n.hidden = SAMPLE === undefined || aiLive(); }
+function menuFacts(){
+  return ITEMS.map(i => {
+    const al = i.status === "pending" ? "allergens NOT yet validated by the manager" : `allergens: ${i.allergens.length ? i.allergens.map(c => ALG[c].en).join(", ") : "none declared"}`;
+    const ing = i.ingr ? `; ingredients: ${i.ingr.en.join(", ")}` : "";
+    const extra = i.note ? `; ${i.note.en}` : (i.fact ? `; ${i.fact.en}` : "");
+    return `- ${i.name} (${i.cat}, AED ${i.price}): ${i.desc.en}${ing}; ${al}${extra}`;
+  }).join("\n") + `\nTonight: Yuzu Margarita unavailable (no yuzu); only 6 truffle tagliolini left. Champagne formats: magnum 1.5 L = 2 bottles (about 12 flutes), jéroboam 3 L = 4 bottles. Prices in the bottle list are for a 75 cl bottle; a magnum costs roughly double.`;
+}
+function guestRules(sc){
+  const lang = state.lang === "fr" ? "French" : "English";
+  return `You are role-playing a GUEST at Ondine, a festive Mediterranean restaurant in Dubai Marina, so that a staff member can practise. Persona: ${sc.persona}
+Rules: speak only as the guest, in ${lang}, 1 to 3 short sentences per reply. React naturally: if the waiter suggests something appealing with good detail, show interest; if they are vague, ask a follow-up question; if they state something that contradicts the menu facts below (especially allergens), sound unsure or question it. Never coach the waiter, never mention that you are an AI, no stage directions or emojis.
+Menu facts (the only truth):
+${menuFacts()}
+You already opened the conversation by saying: "${sc.opener[state.lang]}"
+The waiter's messages follow.`;
+}
+function startPractice(id){
+  state.practice = {id, turns:[{who:"guest", text:L(SCEN[id].opener), opener:true}], draft:"", busy:false, script:0, fb:null, fbBusy:false, err:null, ctl:null, scripted:false};
+}
+async function sendWaiter(){
+  const p = state.practice; if(!p || p.busy) return;
+  const text = p.draft.trim(); if(!text) return;
+  const sc = SCEN[p.id];
+  p.turns.push({who:"waiter", text}); p.draft = ""; p.err = null; p.busy = true;
+  p.turns.push({who:"guest", text:"", pending:true});
+  render(); scrollChat();
+  const s = await samplePromise;
+  let reply = null;
+  if(s && !aiDenied){
+    const ctl = new AbortController(); p.ctl = ctl;
+    const input = [{role:"user", content:guestRules(sc)}, ...p.turns.filter(x => !x.opener && !x.pending).map(x => ({role: x.who==="waiter" ? "user" : "assistant", content:x.text}))];
+    try{
+      const r = await s(input, {cache:false, modelTier:"quick", signal:ctl.signal, onText:({text}) => { const b = $("#pendingBubble"); if(b) b.textContent = text; }});
+      reply = r.text;
+    }catch(e){
+      if(e && GATED.includes(e.code)){ aiDenied = true; p.scripted = true; }
+      else if(e && e.code === "cancelled"){ p.turns = p.turns.filter(x => !x.pending); p.busy = false; render(); return; }
+      else { p.turns = p.turns.filter(x => !x.pending); p.err = t("guestErr"); p.busy = false; render(); return; }
+    }
+  }
+  if(reply == null){
+    p.scripted = true;
+    await new Promise(r => setTimeout(r, 650));
+    const lines = sc.script[state.lang];
+    reply = lines[Math.min(p.script, lines.length-1)]; p.script++;
+  }
+  const last = p.turns[p.turns.length-1];
+  if(last && last.pending){ last.text = reply; delete last.pending; }
+  p.busy = false; p.ctl = null;
+  render(); scrollChat(true);
+}
+async function getFeedback(){
+  const p = state.practice; if(!p) return;
+  if(!p.turns.some(x => x.who === "waiter")){ p.err = t("needMsg"); render(); return; }
+  const sc = SCEN[p.id];
+  p.fbBusy = true; p.err = null; render();
+  const s = await samplePromise;
+  if(s && !aiDenied && !p.scripted){
+    const lang = state.lang === "fr" ? "French" : "English";
+    const transcript = p.turns.filter(x => !x.pending).map(x => `${x.who==="waiter"?"WAITER":"GUEST"}: ${x.text}`).join("\n");
+    const prompt = `You are a demanding but kind trainer for a luxury, festive restaurant (Ondine, Dubai). Score the WAITER in this practice conversation.
+Scenario: ${sc.brief.en} Goal: ${sc.goal.en}
+Menu facts (the only truth):
+${menuFacts()}
+Transcript:
+${transcript}
+Reply with only JSON in this shape:
+{"overall": integer 0-100, "scores": {"knowledge": 0-10, "selling": 0-10, "hospitality": 0-10, "safety": 0-10}, "went_well": [max 2 short strings], "improve": [max 2 short strings], "try_saying": "one better line the waiter could have said"}
+"safety" means accuracy about facts and allergens. Any wrong or unchecked allergen claim caps "overall" at 40. Be specific to what the waiter actually said. Write every string in ${lang}.`;
+    try{
+      const fb = await s.json(prompt, {cache:false});
+      p.fb = normFb(fb, sc);
+    }catch(e){
+      if(e && GATED.includes(e.code)){ aiDenied = true; p.fb = {...SCRIPT_FB[state.lang], try_saying:L(sc.tryLine), sample:true}; }
+      else p.err = t("fbErr");
+    }
+  } else {
+    await new Promise(r => setTimeout(r, 700));
+    p.fb = {...SCRIPT_FB[state.lang], try_saying:L(sc.tryLine), sample:true};
+  }
+  p.fbBusy = false; render(); window.scrollTo(0,0);
+}
+function normFb(fb, sc){
+  const n = (v, max) => Math.max(0, Math.min(max, Math.round(Number(v) || 0)));
+  const arr = v => Array.isArray(v) ? v.slice(0,2).map(String) : [];
+  const s = (fb && fb.scores) || {};
+  return {overall:n(fb && fb.overall, 100), scores:{knowledge:n(s.knowledge,10), selling:n(s.selling,10), hospitality:n(s.hospitality,10), safety:n(s.safety,10)},
+    went_well:arr(fb && fb.went_well), improve:arr(fb && fb.improve), try_saying: fb && fb.try_saying ? String(fb.try_saying) : L(sc.tryLine)};
+}
+function scrollChat(focus){
+  const c = $("#composer"); if(c) c.scrollIntoView({block:"end", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  if(focus){ const i = $("#chatInput"); if(i) i.focus({preventScroll:true}); }
+}
+
+function vPractice(){
+  const p = state.practice;
+  if(!p){
+    return `<div class="view"><section class="hero"><h1 class="title md">${esc(t("prTitle"))}</h1><p class="lede">${esc(t("prIntro"))}</p>
+      <span class="ai-badge" data-ai>${aiBadge()}</span></section>
+      <div class="stack">${Object.entries(SCEN).map(([id, sc]) => `<button class="card scen" data-act="practice" data-arg="${id}"><span class="scen-title">${esc(L(sc.title))}</span><span class="scen-sub">${esc(L(sc.brief))}</span><span class="chev">${ICON.chev}</span></button>`).join("")}</div></div>`;
+  }
+  const sc = SCEN[p.id];
+  if(p.fbBusy) return `<div class="view"><section class="hero"><p class="eyebrow gold">${esc(L(sc.title))}</p><h1 class="title md">${esc(t("fbLoading"))}</h1><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></section></div>`;
+  if(p.fb){
+    const f = p.fb, keys = ["knowledge","selling","hospitality","safety"];
+    return `<div class="view"><section class="result"><p class="eyebrow">${esc(L(sc.title))}</p>
+        <span class="ring-wrap">${ring1("fb", f.overall, 208, 16)}<span class="ring-center"><b>${count("fb", f.overall)}</b><small>/ 100</small></span></span>
+        ${f.sample ? `<p class="muted small">${esc(t("sampleFb"))}</p>` : ""}</section>
+      <div class="card score-bars">${keys.map(k => `<div><div class="sb-top"><span>${esc(t("fbScores")[k])}</span><b>${f.scores[k]}/10</b></div><div class="bar ${f.scores[k] < 5 ? "warn" : ""}"><i ${barAttr("fb-" + k, f.scores[k] * 10)}></i></div></div>`).join("")}</div>
+      ${f.went_well.length ? `<section class="card"><h2 class="card-h">${esc(t("fbWell"))}</h2><ul class="list">${f.went_well.map(x => `<li>${esc(x)}</li>`).join("")}</ul></section>` : ""}
+      ${f.improve.length ? `<section class="card"><h2 class="card-h">${esc(t("fbImprove"))}</h2><ul class="list">${f.improve.map(x => `<li>${esc(x)}</li>`).join("")}</ul></section>` : ""}
+      <section class="card"><h2 class="card-h">${esc(t("fbTry"))}</h2><p class="try">${esc(f.try_saying)}</p></section>
+      <div class="stack"><button class="btn primary block" data-act="practice" data-arg="${p.id}">${esc(t("again"))}</button><button class="btn block" data-act="practiceHome">${esc(t("otherScen"))}</button></div></div>`;
+  }
+  const canEnd = p.turns.some(x => x.who === "waiter") && !p.busy;
+  const lastIdx = p.turns.length - 1;
+  return `<div class="view">
+    <div class="card brief-box"><span class="eyebrow gold">${esc(L(sc.title))}</span><span class="small muted">${esc(L(sc.brief))}</span><span class="goal"><b>${esc(t("goal"))}:</b> ${esc(L(sc.goal))}</span>
+      <span class="ai-badge" data-ai>${aiBadge()}</span>
+      <span class="small muted" id="aiNote" ${(SAMPLE === undefined || aiLive()) && !p.scripted ? "hidden" : ""}>${esc(t("prOffNote"))}</span></div>
+    <div class="chat">${p.turns.map((x, i) => { const last = i === lastIdx && i > 0 ? " last" : "";
+        return x.who === "guest"
+          ? `<span class="who">${esc(t("guest"))}</span><div class="bub guest${last}" ${x.pending ? 'id="pendingBubble"' : ""}>${x.pending ? '<span class="dots" aria-label="…"><i></i><i></i><i></i></span>' : esc(x.text)}</div>`
+          : `<span class="who r">${esc(t("youLbl"))}</span><div class="bub waiter${last}">${esc(x.text)}</div>`; }).join("")}</div>
+    ${p.err ? `<p class="err">${esc(p.err)}</p>` : ""}
+    <div class="stack" id="composer">
+      <div class="composer"><textarea id="chatInput" rows="1" placeholder="${esc(t("typeHere"))}" aria-label="${esc(t("typeHere"))}" ${p.busy ? "disabled" : ""}>${esc(p.draft)}</textarea>
+      ${p.busy ? `<button class="icon-btn" data-act="stopGuest" aria-label="${esc(t("stop"))}" title="${esc(t("stop"))}">${ICON.stop}</button>` : `<button class="icon-btn primary" data-act="send" aria-label="${esc(t("send"))}" title="${esc(t("send"))}">${ICON.send}</button>`}</div>
+      <div class="btn-row"><button class="btn ghost sm" data-act="feedback" ${canEnd ? "" : "disabled"}>${esc(t("endFb"))}</button><button class="link" data-act="practiceHome">${esc(t("leave"))}</button></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- Manager: Team ---------- */
+function vTeam(){
+  const rows = teamRows();
+  const ready = avg(rows.map(r => r.ready));
+  const done = rows.filter(r => r.brief).length;
+  const qz = avg(rows.filter(r => r.quiz != null).map(r => r.quiz));
+  const sorted = rows.slice().sort((a,b) => b.ready - a.ready);
+  return `<div class="view"><section class="hero"><h1 class="title md">${esc(t("teamTitle"))}</h1><p class="lede">${esc(t("teamSub"))}</p></section>
+    <div class="card team-rings">
+      <span class="ring-wrap">${rings("team", [ready, pct(done, rows.length), qz], 140, 13, 3)}</span>
+      <ul class="legend big">
+        <li><i class="dot d1"></i><span><b>${count("tm-r", ready)}%</b><small>${esc(t("tiles").ready)}</small></span></li>
+        <li><i class="dot d2"></i><span><b>${count("tm-b", done)}/${rows.length}</b><small>${esc(t("tiles").brief)}</small></span></li>
+        <li><i class="dot d3"></i><span><b>${count("tm-q", qz)}%</b><small>${esc(t("tiles").quiz)}</small></span></li>
+      </ul>
+    </div>
+    <section class="card staff">
+      <div class="srow head"><span></span><span>${esc(t("colStaff"))}</span><span>${esc(t("colReady"))}</span><span class="r">${esc(t("colQuiz"))}</span></div>
+      ${sorted.map((r, i) => `<div class="srow"><span class="avatar sm">${esc(initials(r.name))}</span>
+        <div><div class="s-name ${r.me ? "me" : ""}">${esc(r.name)}${r.me ? ` (${esc(t("you"))})` : ""}</div>
+          <div class="s-role"><span>${esc(L(r.role))}${r.newHire ? ` · ${esc(t("newHire"))}` : ""}</span>${r.ready < 50 ? `<span class="flag">${esc(t("attention"))}</span>` : ""}</div></div>
+        <div class="s-ready"><span class="ring-wrap">${ring1("st-" + i, r.ready, 34, 4, r.ready < 50 ? "var(--bad)" : "var(--gold)")}</span><span>${r.ready}%</span></div>
+        <div class="s-quiz">${r.quiz != null ? r.quiz + "%" : "—"}</div></div>`).join("")}
+    </section></div>`;
+}
+
+/* ---------- Manager: Import ---------- */
+function importPrompt(text){
+  return `You turn a restaurant menu into staff-training content for a luxury venue.
+Read the menu below and reply with ONLY a JSON array, one object per dish or drink, in this exact shape:
+{"name": string, "category": "food" | "bar" | "wine", "price_aed": number or null, "description_en": string, "description_fr": string, "ingredients_en": [string], "ingredients_fr": [string], "allergens_stated": [code], "allergens_to_check": [{"ingredient_en": string, "ingredient_fr": string, "code": code}], "pronunciation": string}
+Rules:
+- Use only facts written on the menu. Never invent ingredients, origins or prices.
+- description_en and description_fr: one appetising sentence each, built only from the menu text.
+- allergens_stated: ONLY allergens the menu text explicitly declares next to the item (for example "contains milk"). If none is written, use [].
+- allergens_to_check: ingredients listed on the menu that commonly contain one of the allergens, for the manager to confirm. Do not repeat codes already in allergens_stated.
+- pronunciation: a simple English respelling of a foreign dish or wine name (like "rwee-NAR"), or "" if not needed.
+- Allowed codes: ${Object.keys(ALG).join(", ")}.
+Menu:
+"""
+${text.slice(0, 12000)}
+"""`;
+}
+let impN = 0;
+function addImported(arr){
+  const codes = Object.keys(ALG);
+  const items = (Array.isArray(arr) ? arr : []).filter(x => x && x.name).slice(0, 40).map(x => {
+    const stated = (Array.isArray(x.allergens_stated) ? x.allergens_stated : []).map(String).filter(c => codes.includes(c));
+    const checks = (Array.isArray(x.allergens_to_check) ? x.allergens_to_check : []).filter(c => c && codes.includes(String(c.code)) && !stated.includes(String(c.code)))
+      .map(c => ({ingr:{en:String(c.ingredient_en || c.ingredient || ""), fr:String(c.ingredient_fr || c.ingredient_en || c.ingredient || "")}, code:String(c.code), ok:false}));
+    const cat = ["food","bar","wine"].includes(x.category) ? x.category : "food";
+    const pr = Number(x.price_aed);
+    return {id:"imp" + (++impN), cat, name:String(x.name).slice(0,80), price: Number.isFinite(pr) && pr > 0 ? pr : null, status:"pending", imported:true,
+      desc:{en:String(x.description_en || ""), fr:String(x.description_fr || x.description_en || "")},
+      ingr:{en:(Array.isArray(x.ingredients_en)?x.ingredients_en:[]).map(String), fr:(Array.isArray(x.ingredients_fr)?x.ingredients_fr:(x.ingredients_en||[])).map(String)},
+      allergens:stated, checks, say: x.pronunciation ? {w:"", ph:String(x.pronunciation)} : null};
+  });
+  ITEMS.push(...items);
+  return items.length;
+}
+async function runImport(){
+  const text = state.importText.trim(); if(!text || state.imp.status === "busy") return;
+  state.imp = {status:"busy"}; render();
+  const s = await samplePromise;
+  const demoFallback = () => {
+    if(text === SAMPLE_MENU.trim()){
+      const already = ITEMS.filter(i => i.imported && i.status === "pending").length;
+      state.imp = {status:"done", n: already || addImported(SAMPLE_IMPORT), demo:true};
+    }
+    else state.imp = {status:"error", msg:t("impOff")};
+  };
+  if(s && !aiDenied){
+    const ctl = new AbortController(); state.imp.ctl = ctl;
+    try{
+      const arr = await s.json(importPrompt(text), {signal:ctl.signal});
+      const n = addImported(arr);
+      state.imp = n ? {status:"done", n} : {status:"error", msg:t("impErr")};
+    }catch(e){
+      if(e && e.code === "cancelled") state.imp = {status:"idle"};
+      else if(e && GATED.includes(e.code)){ aiDenied = true; demoFallback(); }
+      else state.imp = {status:"error", msg:t("impErr")};
+    }
+  } else demoFallback();
+  render();
+}
+
+function vImport(){
+  const im = state.imp;
+  return `<div class="view"><section class="hero"><h1 class="title md">${esc(t("impTitle"))}</h1><p class="lede">${esc(t("impSub"))}</p><span class="ai-badge" data-ai>${aiBadge()}</span></section>
+    <div class="card imp-card">
+      <textarea id="impText" rows="9" aria-label="${esc(t("impTitle"))}" ${im.status==="busy"?"disabled":""}>${esc(state.importText)}</textarea>
+      <div class="btn-row">
+        ${im.status === "busy" ? `<button class="btn" data-act="stopImport">${esc(t("stop"))}</button>` : `<button class="btn primary" data-act="import">${esc(t("impBtn"))}</button>`}
+        ${state.importText.trim() !== SAMPLE_MENU.trim() && im.status !== "busy" ? `<button class="btn ghost sm" data-act="resetImport">${esc(t("impReset"))}</button>` : ""}
+      </div>
+      ${im.status === "busy" ? `<p class="muted small"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span> ${esc(t("impBusy"))}</p>` : ""}
+    </div>
+    ${im.status === "done" ? `<div class="card stack"><p class="ok-line">${ICON.check}<span>${esc(t("impDone")(im.n))}</span></p>${im.demo ? `<p class="muted small">${esc(t("impDemo"))}</p>` : ""}<div><button class="btn primary sm" data-act="tab" data-arg="validate">${esc(t("impReview"))}</button></div></div>` : ""}
+    ${im.status === "error" ? `<p class="err">${esc(im.msg)}</p>` : ""}
+    <div class="card rule">${ICON.shield}<span>${t("rule")}</span></div>
+  </div>`;
+}
+
+/* ---------- Manager: Validate ---------- */
+function vValidate(){
+  const pend = ITEMS.filter(i => i.status === "pending");
+  return `<div class="view"><section class="hero"><h1 class="title md">${esc(t("valTitle"))}</h1><p class="lede">${esc(t("valSub"))}</p></section>
+    ${pend.length ? `<div class="stack">${pend.map(it => `<article class="card val">
+        <div class="val-top"><span class="val-name">${esc(it.name)}${tagsHtml(it)}</span><span class="price">${esc(price(it.price))}</span></div>
+        <p class="muted small">${esc(t("catBible")[it.cat])} · ${esc(L(it.desc))}</p>
+        ${it.ingr && L(it.ingr).length ? `<div class="kv"><h4>${esc(t("ingredients"))}</h4><p class="small">${esc(L(it.ingr).join(", "))}</p></div>` : ""}
+        <div class="kv"><h4>${esc(t("stated"))}</h4>${it.allergens.length ? algChips(it.allergens) : `<span class="muted small">${esc(t("noneStated"))}</span>`}</div>
+        ${it.checks && it.checks.length ? `<div class="kv"><h4>${esc(t("toCheck"))}</h4><div class="chips">${it.checks.map((c,k) => `<button class="chip check" data-act="check" data-arg="${it.id}:${k}" aria-pressed="${c.ok}">${c.ok ? ICON.check : ""}${esc(L(c.ingr))} → ${esc(L(ALG[c.code]))}</button>`).join("")}</div></div>` : ""}
+        <div><button class="btn primary sm" data-act="approve" data-arg="${it.id}">${esc(t("approve"))}</button></div>
+      </article>`).join("")}</div><p class="muted small">${esc(t("dropNote"))}</p>` : `<div class="card rule">${ICON.check}<span>${esc(t("valEmpty"))}</span></div>`}
+    <div class="card rule">${ICON.shield}<span>${t("rule")}</span></div>
+  </div>`;
+}
+
+/* ---------- Render ---------- */
+function view(){
+  switch(state.tab){
+    case "today": return vToday();
+    case "bible": return vBible();
+    case "quiz": return vQuiz();
+    case "practice": return vPractice();
+    case "team": return vTeam();
+    case "import": return vImport();
+    case "validate": return vValidate();
+  }
+  return "";
+}
+
+const reduceMotion = () => { try{ return matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } };
+const memo = new Map();   // last value shown per counter, ring and bar, so re-renders do not replay them
+function animate(){
+  const rm = reduceMotion();
+  document.querySelectorAll("[data-count]").forEach(el => {
+    const key = "c:" + el.dataset.key, to = Number(el.dataset.count);
+    const from = memo.has(key) ? memo.get(key) : 0; memo.set(key, to);
+    if(rm || from === to || !Number.isFinite(to)) return;
+    const start = performance.now(), dur = 950;
+    el.textContent = fmtNum(Math.round(from));
+    const step = now => {
+      if(!el.isConnected) return;
+      const k = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmtNum(Math.round(from + (to - from) * e));
+      if(k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+  document.querySelectorAll(".ring-v").forEach(el => {
+    const key = "r:" + el.dataset.key, C = Number(el.dataset.c), to = Number(el.dataset.v);
+    const from = memo.has(key) ? memo.get(key) : 0; memo.set(key, to);
+    if(rm || from === to) return;
+    el.style.transition = "none";
+    el.style.strokeDashoffset = String(C * (1 - from / 100));
+    el.getBoundingClientRect();
+    requestAnimationFrame(() => { el.style.transition = ""; el.style.strokeDashoffset = String(C * (1 - to / 100)); });
+  });
+  document.querySelectorAll("[data-bar]").forEach(el => {
+    const key = "b:" + el.dataset.bar, to = Number(el.dataset.v);
+    const from = memo.has(key) ? memo.get(key) : 0; memo.set(key, to);
+    if(rm || from === to) return;
+    el.style.transition = "none";
+    el.style.width = from + "%";
+    el.getBoundingClientRect();
+    requestAnimationFrame(() => { el.style.transition = ""; el.style.width = to + "%"; });
+  });
+}
+
+let sheetTimer = null;
+function renderSheet(){
+  const sh = $("#sheet"), body = $("#sheetBody");
+  const it = state.tab === "bible" && state.openItem ? byId(state.openItem) : null;
+  const close = $("#sheetClose");
+  close.innerHTML = ICON.close; close.setAttribute("aria-label", t("close"));
+  if(it){
+    const wasOpen = sh.classList.contains("open");
+    if(body.dataset.id !== it.id) body.scrollTop = 0;
+    body.innerHTML = sheetBody(it); body.dataset.id = it.id;
+    clearTimeout(sheetTimer);
+    document.documentElement.classList.add("locked");
+    if(!wasOpen){
+      sh.hidden = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.add("open")));
+      setTimeout(() => { if(close.isConnected) close.focus({preventScroll:true, focusVisible:false}); }, 80);
+    }
+  } else if(!sh.hidden){
+    sh.classList.remove("open");
+    document.documentElement.classList.remove("locked");
+    clearTimeout(sheetTimer);
+    sheetTimer = setTimeout(() => { if(!sh.classList.contains("open")){ sh.hidden = true; body.innerHTML = ""; body.dataset.id = ""; } }, reduceMotion() ? 0 : 400);
+  }
+}
+
+function celebrate(){
+  if(reduceMotion()) return;
+  const cv = document.createElement("canvas"); cv.className = "fx"; cv.setAttribute("aria-hidden", "true");
+  document.body.appendChild(cv);
+  const W = innerWidth, H = innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  const g = cv.getContext("2d"); if(!g){ cv.remove(); return; }
+  g.scale(dpr, dpr);
+  const golds = ["#C9A96E", "#E4CF9F", "#F3E5C2", "#A88A52"];
+  const parts = [];
+  for(let i = 0; i < 64; i++) parts.push({b:true, x:Math.random()*W, y:H + Math.random()*H*.5, r:2 + Math.random()*6, vy:-(1.4 + Math.random()*2.6), ph:Math.random()*6.28, a:.35 + Math.random()*.45});
+  for(let i = 0; i < 90; i++) parts.push({b:false, x:W/2 + (Math.random() - .5)*W*.35, y:H*.32, vx:(Math.random() - .5)*10, vy:-(4 + Math.random()*7), w:5 + Math.random()*5, h:3 + Math.random()*3, rot:Math.random()*6.28, vr:(Math.random() - .5)*.3, col:golds[i % 4]});
+  const start = performance.now(), dur = 3200;
+  const frame = now => {
+    const el = now - start, fade = el > dur - 700 ? Math.max(0, (dur - el) / 700) : 1;
+    g.clearRect(0, 0, W, H);
+    for(const p of parts){
+      if(p.b){
+        p.y += p.vy; p.x += Math.sin(el / 280 + p.ph) * .6;
+        g.globalAlpha = p.a * fade; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.283);
+        g.strokeStyle = "#E4CF9F"; g.lineWidth = 1.2; g.stroke();
+        g.globalAlpha = p.a * fade * .22; g.fillStyle = "#F3E5C2"; g.fill();
+      } else {
+        p.vy += .22; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        g.save(); g.globalAlpha = fade; g.translate(p.x, p.y); g.rotate(p.rot);
+        g.fillStyle = p.col; g.fillRect(-p.w/2, -p.h/2, p.w, Math.max(1, p.h * Math.abs(Math.cos(p.rot * 2)))); g.restore();
+      }
+    }
+    if(el < dur) requestAnimationFrame(frame); else cv.remove();
+  };
+  requestAnimationFrame(frame);
+}
+function maybeCelebrate(){
+  const q = state.quiz;
+  if(q && q.done && !q._fx){ q._fx = true; if(q.qs.length && q.score / q.qs.length >= .8) setTimeout(celebrate, 450); }
+  const p = state.practice;
+  if(p && p.fb && !p.fb._fx){ p.fb._fx = true; if(p.fb.overall >= 80) setTimeout(celebrate, 450); }
+}
+
+function render(opts){
+  const enter = !!(opts && opts.enter);
+  if(enter) memo.clear();
+  document.documentElement.lang = state.lang;
+  $("#hdr").innerHTML = header();
+  const v = $("#view");
+  v.innerHTML = view();
+  v.classList.toggle("enter", enter);
+  $("#nav").innerHTML = nav();
+  renderSheet();
+  if(state.quiz && state.quiz.ends && !state.quiz.done) tickTimer();
+  animate();
+  maybeCelebrate();
+}
+
+/* ---------- Actions ---------- */
+const ACT = {
+  lang(a){ state.lang = a; store.set("lang", a); render(); },
+  role(a){ if(state.role === a) return; state.role = a; store.set("role", a); state.tab = a === "manager" ? "team" : "today"; render({enter:true}); window.scrollTo(0,0); },
+  tab(a){ state.tab = a; if(a === "quiz" && state.quiz && state.quiz.done) state.quiz = null; render({enter:true}); window.scrollTo(0,0); },
+  cat(a){ state.bibleCat = a; state.openItem = null; render({enter:true}); },
+  excl(a){ state.exclude.has(a) ? state.exclude.delete(a) : state.exclude.add(a); render(); },
+  toggleItem(id){ state.openItem = state.openItem === id ? null : id; if(state.openItem && byId(id).status === "live") ME.read.add(id); render(); },
+  openItem(id){ const it = byId(id); const moved = state.tab !== "bible" || state.bibleCat !== it.cat; state.role = "staff"; state.tab = "bible"; state.bibleCat = it.cat; state.openItem = id; if(it.status === "live") ME.read.add(id); render({enter:moved}); },
+  goItem(id){ ACT.openItem(id); },
+  closeSheet(){ state.openItem = null; render(); },
+  speak(id){ const it = byId(id); if(!it || !it.say || !it.say.w) return; try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(it.say.w); u.lang = it.say.lang || "en-US"; u.rate = .85; speechSynthesis.speak(u); }catch(e){} },
+  quiz(m){ startQuiz(m); render({enter:true}); window.scrollTo(0,0); },
+  quizHome(){ state.quiz = null; clearInterval(timerId); render({enter:true}); window.scrollTo(0,0); },
+  answer(k){ const q = state.quiz; if(!q || q.picked !== null) return; q.picked = Number(k); if(q.picked === q.qs[q.i].correct){ q.score++; ME.xp += 10; } render(); },
+  nextQ(){ const q = state.quiz; if(!q) return; if(q.i + 1 < q.qs.length){ q.i++; q.picked = null; } else { q.done = true; clearInterval(timerId); state.lastScores[q.mode] = q.score; ME.quizPct.push(pct(q.score, q.qs.length)); if(q.mode === "briefing") ME.brief = q.score; } render({enter:true}); window.scrollTo(0,0); },
+  practice(id){ startPractice(id); render({enter:true}); window.scrollTo(0,0); },
+  practiceHome(){ if(state.practice && state.practice.ctl) state.practice.ctl.abort(); state.practice = null; render({enter:true}); window.scrollTo(0,0); },
+  send(){ sendWaiter(); },
+  stopGuest(){ const p = state.practice; if(p && p.ctl) p.ctl.abort(); },
+  feedback(){ getFeedback(); },
+  import(){ runImport(); },
+  stopImport(){ if(state.imp.ctl) state.imp.ctl.abort(); },
+  resetImport(){ state.importText = SAMPLE_MENU; state.imp = {status:"idle"}; render(); },
+  check(a){ const [id,k] = a.split(":"); const it = byId(id); if(!it) return; const c = it.checks[Number(k)]; if(c){ c.ok = !c.ok; render(); } },
+  approve(id){ const it = byId(id); if(!it) return; const add = it.checks.filter(c => c.ok).map(c => c.code); it.allergens = [...new Set([...it.allergens, ...add])]; it.checks = []; it.status = "live"; render(); toast(t("published")(t("catBible")[it.cat])); }
+};
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if(!el || el.disabled) return;
+  const f = ACT[el.dataset.act]; if(f){ e.preventDefault(); f(el.dataset.arg, el); }
+});
+document.addEventListener("input", e => {
+  if(e.target.id === "chatInput" && state.practice) state.practice.draft = e.target.value;
+  if(e.target.id === "impText") state.importText = e.target.value;
+});
+document.addEventListener("input", e => {
+  if(e.target.id === "chatInput"){ e.target.style.height = "auto"; e.target.style.height = Math.min(160, e.target.scrollHeight) + "px"; }
+});
+document.addEventListener("keydown", e => {
+  if(e.target.id === "chatInput" && e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); sendWaiter(); }
+});
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && state.openItem && state.tab === "bible"){ e.preventDefault(); ACT.closeSheet(); }
+});
+render({enter:true});
+</script>
+</body>
+</html>
